@@ -2,6 +2,6 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "self:iMAPSmobile.xcodeproj">
+      location = "self:iMapsMobile.xcodeproj">
    </FileRef>
 </Workspace>
