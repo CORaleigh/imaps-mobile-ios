@@ -10,7 +10,7 @@
 #import <ArcGIS/ArcGIS.h>
 
 @interface MapViewController : UIViewController<UISplitViewControllerDelegate, UIPopoverControllerDelegate,AGSMapViewLayerDelegate, AGSMapViewTouchDelegate, AGSQueryTaskDelegate, AGSPopupsContainerDelegate,
- AGSGeometryServiceTaskDelegate, UIAlertViewDelegate, AGSLocationDisplayDataSourceDelegate>
+ AGSGeometryServiceTaskDelegate, UIAlertViewDelegate, AGSLocationDisplayDataSourceDelegate, UIPopoverPresentationControllerDelegate>
 
 @property (weak, nonatomic) IBOutlet AGSMapView *mapView;
 @property (strong, nonatomic) AGSGraphic *property;

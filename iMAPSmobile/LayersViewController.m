@@ -99,6 +99,7 @@
 - (void) getConfig {
     NSURL* url = [NSURL URLWithString:@"http://maps.raleighnc.gov/iMAPS_iOS/config.txt"];
     self.jsonOp = [[AGSJSONRequestOperation alloc] initWithURL:url];
+    self.jsonOp.requestCachePolicy = NSURLRequestReloadIgnoringCacheData;
     self.jsonOp.target = self;
     self.jsonOp.action = @selector(operation:didSucceedWithReponse:);
     [self.queue addOperation:self.jsonOp];

@@ -14,4 +14,7 @@
 @property (strong, nonatomic) AGSFindTask *findTask;
 @property (strong, nonatomic) AGSFindParameters *findParams;
 @property (strong, nonatomic) AGSGraphic *graphic;
+@property (strong, nonatomic) AGSJSONRequestOperation *jsonOp;
+@property (strong, nonatomic) NSOperationQueue *queue;
+@property (strong, nonatomic) NSArray *permits;
 @end

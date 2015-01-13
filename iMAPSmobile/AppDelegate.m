@@ -78,9 +78,9 @@
 - (void)applicationDidBecomeActive:(UIApplication *)application
 {
     // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
-    if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone) {
+   // if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone) {
         [self testNetworkConnection];
-    }
+  //  }
 }
 
 - (void) alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex {
@@ -108,6 +108,7 @@
 - (void) getConfig {
     self.queue = [[NSOperationQueue alloc] init];
     NSURL* url = [NSURL URLWithString:@"http://maps.raleighnc.gov/iMAPS_iOS/iMAPS_Alert.txt"];
+    self.jsonOp.requestCachePolicy = NSURLRequestReloadIgnoringCacheData;
     self.jsonOp = [[AGSJSONRequestOperation alloc] initWithURL:url];
     self.jsonOp.target = self;
     self.jsonOp.action = @selector(operation:didSucceedWithResponse:);
@@ -120,7 +121,7 @@
 }
 
 - (void)operation:(NSOperation*)op didSucceedWithResponse:(NSDictionary *) results {
-    if ([[results objectForKey:@"show"] isEqualToString:@"true"]) {
+    if ([[results objectForKey:@"enabled"] boolValue] == YES) {
         UIAlertView* av = [[UIAlertView alloc] initWithTitle:@"iMAPS Alert"
                                                      message:[results objectForKey:@"message"]
                                                     delegate:nil cancelButtonTitle:@"OK"

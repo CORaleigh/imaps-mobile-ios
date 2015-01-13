@@ -39,6 +39,9 @@
 {
     [super viewDidLoad];
 	// Do any additional setup after loading the view.
+    
+
+    
     self.navigationController.navigationBarHidden = NO;
     self.navigationController.toolbarHidden = NO;
     self.navigationController.navigationBar.translucent = NO;
@@ -84,10 +87,56 @@
     // Dispose of any resources that can be recreated.
 }
 - (IBAction)showActionSheet:(id)sender {
-    
-    self.actionSheet = [[UIActionSheet alloc] initWithTitle:@"Search By" delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:nil otherButtonTitles:@"Address",@"Owner",@"PIN", @"REID", @"Street Name", nil];
-    self.actionSheet.cancelButtonIndex = self.actionSheet.numberOfButtons - 1;
-    [self.actionSheet showInView:self.view];
+    if ([UIAlertController class]) {
+        UIAlertControllerStyle style = UIAlertControllerStyleActionSheet;
+        UIDeviceOrientation orient = [UIDevice currentDevice].orientation;
+        if (UIDeviceOrientationIsLandscape(orient)) {
+            style = UIAlertControllerStyleAlert;
+        }
+        self.alertController = [UIAlertController alertControllerWithTitle:@"Search By" message:nil preferredStyle: style];
+        UIAlertAction* address = [UIAlertAction actionWithTitle:@"Address" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+            self.type = action.title;
+            self.searchBar.placeholder = @"Enter an address";
+            self.searchBar.keyboardType = UIKeyboardTypeDefault;
+        }];
+        UIAlertAction* owner = [UIAlertAction actionWithTitle:@"Owner" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+            self.type = action.title;
+            self.searchBar.placeholder = @"Enter an owner name";
+            self.searchBar.keyboardType = UIKeyboardTypeDefault;
+        }];
+        UIAlertAction* pin = [UIAlertAction actionWithTitle:@"PIN" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+            self.type = action.title;
+            self.searchBar.placeholder = @"Enter a PIN number";
+            self.searchBar.keyboardType = UIKeyboardTypeNumberPad;
+        }];
+        UIAlertAction* reid = [UIAlertAction actionWithTitle:@"REID" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+            self.type = action.title;
+            self.searchBar.placeholder = @"Enter a real estate ID";
+            self.searchBar.keyboardType = UIKeyboardTypeNumberPad;
+        }];
+        UIAlertAction* street = [UIAlertAction actionWithTitle:@"Street Name" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+            self.type = action.title;
+            self.searchBar.placeholder = @"Enter a street name";
+            self.searchBar.keyboardType = UIKeyboardTypeDefault;
+        }];
+        UIAlertAction* cancel = [UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {
+            [self.alertController dismissViewControllerAnimated:YES completion:nil];
+        }];
+        [self.alertController addAction:address];
+        [self.alertController addAction:owner];
+        [self.alertController addAction:pin];
+        [self.alertController addAction:reid];
+        [self.alertController addAction:street];
+        [self.alertController addAction:cancel];
+        [self presentViewController:self.alertController animated:YES completion:nil];
+        
+    } else {
+            self.actionSheet = [[UIActionSheet alloc] initWithTitle:@"Search By" delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:nil otherButtonTitles:@"Address",@"Owner",@"PIN", @"REID", @"Street Name", nil];
+            self.actionSheet.cancelButtonIndex = self.actionSheet.numberOfButtons - 1;
+        
+            [self.actionSheet showInView:self.view];
+    }
+
     
 }
 - (IBAction)showMap:(id)sender {

@@ -417,6 +417,9 @@
     self.navigationController.toolbar.userInteractionEnabled = YES;
 }
 
+
+
+
 #pragma mark - Navigation
 
 // In a story board-based application, you will often want to do a little preparation before navigation
@@ -431,12 +434,15 @@
             [segue.destinationViewController performSelector:@selector(setMapView:)
                                                   withObject:_mapView];
         } else {
-            UINavigationController *navController = segue.destinationViewController;
-            LayersViewController *lvc = (LayersViewController *)navController.topViewController;
-            lvc.mapView = _mapView;
-            UIStoryboardPopoverSegue *pop = (UIStoryboardPopoverSegue*)segue;
-            pop.popoverController.delegate = self;
-            self.navigationController.toolbar.userInteractionEnabled = NO;
+
+                [self.masterPopoverController dismissPopoverAnimated:YES];
+                UINavigationController *navController = segue.destinationViewController;
+                LayersViewController *lvc = (LayersViewController *)navController.topViewController;
+                lvc.mapView = _mapView;
+                UIStoryboardPopoverSegue *pop = (UIStoryboardPopoverSegue*)segue;
+                self.masterPopoverController = pop.popoverController;
+                pop.popoverController.delegate = self;
+                //self.navigationController.toolbar.userInteractionEnabled = NO;
 
         }
     }
@@ -445,12 +451,15 @@
                 [segue.destinationViewController performSelector:@selector(setMapView:)
                                                           withObject:_mapView];
             } else {
-                UINavigationController *navController = segue.destinationViewController;
-                BaseMapsSegementedController *bmvc = (BaseMapsSegementedController *)navController.topViewController;
-                bmvc.mapView = _mapView;
-                self.navigationController.toolbar.userInteractionEnabled = NO;
-                UIStoryboardPopoverSegue *pop = (UIStoryboardPopoverSegue*)segue;
-                pop.popoverController.delegate = self;
+
+                    [self.masterPopoverController dismissPopoverAnimated:YES];
+                    UINavigationController *navController = segue.destinationViewController;
+                    LayersViewController *lvc = (LayersViewController *)navController.topViewController;
+                    lvc.mapView = _mapView;
+                    UIStoryboardPopoverSegue *pop = (UIStoryboardPopoverSegue*)segue;
+                    self.masterPopoverController = pop.popoverController;
+                    pop.popoverController.delegate = self;
+                    //self.navigationController.toolbar.userInteractionEnabled = NO;
             }
     } else if ([[segue identifier] isEqualToString:@"mapToResults"]){
         if ([segue.destinationViewController respondsToSelector:@selector(setInfo:)]) {
@@ -472,6 +481,11 @@
         [svc performSelector:@selector(setStreetViewUrl:) withObject:self.streetViewUrl];
     }
 }
+
+-(UIModalPresentationStyle)adaptivePresentationStyleForPresentationController:(UIPresentationController *)controller {
+    return UIModalPresentationNone;
+}
+
 
 
 

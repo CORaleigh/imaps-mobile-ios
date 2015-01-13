@@ -23,6 +23,7 @@
 		C721DDA6182D3A8900D7605F /* AddressesViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C721DDA5182D3A8900D7605F /* AddressesViewController.m */; };
 		C722EFD8183E513500B50189 /* ServicesWebViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C722EFD7183E513500B50189 /* ServicesWebViewController.m */; };
 		C7369477185BA6E600A35C2D /* BaseMapsSegementedController.m in Sources */ = {isa = PBXBuildFile; fileRef = C7369476185BA6E600A35C2D /* BaseMapsSegementedController.m */; };
+		C742CD5119F000FA00597EC2 /* SepticPermitViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C742CD5019F000FA00597EC2 /* SepticPermitViewController.m */; };
 		C750761617FCB7E40055D3E8 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C750761517FCB7E40055D3E8 /* Foundation.framework */; };
 		C750761817FCB7E40055D3E8 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C750761717FCB7E40055D3E8 /* CoreGraphics.framework */; };
 		C750761A17FCB7E40055D3E8 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C750761917FCB7E40055D3E8 /* UIKit.framework */; };
@@ -109,6 +110,8 @@
 		C722EFD7183E513500B50189 /* ServicesWebViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ServicesWebViewController.m; sourceTree = "<group>"; };
 		C7369475185BA6E600A35C2D /* BaseMapsSegementedController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BaseMapsSegementedController.h; sourceTree = "<group>"; };
 		C7369476185BA6E600A35C2D /* BaseMapsSegementedController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BaseMapsSegementedController.m; sourceTree = "<group>"; };
+		C742CD4F19F000FA00597EC2 /* SepticPermitViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SepticPermitViewController.h; sourceTree = "<group>"; };
+		C742CD5019F000FA00597EC2 /* SepticPermitViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SepticPermitViewController.m; sourceTree = "<group>"; };
 		C750761217FCB7E40055D3E8 /* iMapsMobile.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iMapsMobile.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C750761517FCB7E40055D3E8 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		C750761717FCB7E40055D3E8 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -325,6 +328,8 @@
 				C722EFD7183E513500B50189 /* ServicesWebViewController.m */,
 				C750763017FCB7E40055D3E8 /* Images.xcassets */,
 				C750761C17FCB7E40055D3E8 /* Supporting Files */,
+				C742CD4F19F000FA00597EC2 /* SepticPermitViewController.h */,
+				C742CD5019F000FA00597EC2 /* SepticPermitViewController.m */,
 			);
 			path = iMAPSmobile;
 			sourceTree = "<group>";
@@ -367,8 +372,8 @@
 				C7A28F8C18773A11002A2C7A /* SVProgressHUD.m */,
 			);
 			name = SVProgressHUD;
-			path = "../../../../Downloads/SVProgressHUD-master/SVProgressHUD";
-			sourceTree = "<group>";
+			path = iMAPSmobile/SVProgressHUD;
+			sourceTree = SOURCE_ROOT;
 		};
 /* End PBXGroup section */
 
@@ -414,7 +419,7 @@
 		C750760A17FCB7E40055D3E8 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0510;
+				LastUpgradeCheck = 0610;
 				ORGANIZATIONNAME = "City of Raleigh";
 				TargetAttributes = {
 					C750761117FCB7E40055D3E8 = {
@@ -478,6 +483,7 @@
 				C71E125F1808675200B52444 /* PhotoContentViewController.m in Sources */,
 				C718608C180718BC001947E4 /* LegendCell.m in Sources */,
 				C722EFD8183E513500B50189 /* ServicesWebViewController.m in Sources */,
+				C742CD5119F000FA00597EC2 /* SepticPermitViewController.m in Sources */,
 				C71E1256180836DA00B52444 /* TaxViewController.m in Sources */,
 				C7186089180704AE001947E4 /* LegendViewController.m in Sources */,
 				C704882F1805B87C001F2E2A /* LayerDetailsViewController.m in Sources */,
@@ -575,6 +581,7 @@
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Distribution: City of Raleigh (MRWDJLVR85)";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				FRAMEWORK_SEARCH_PATHS = "$(HOME)/Library/SDKs/ArcGIS/iOS/**";
@@ -593,7 +600,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
-				ONLY_ACTIVE_ARCH = NO;
+				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = (
 					"-ObjC",
 					"-framework",
@@ -601,6 +608,7 @@
 					"-l",
 					"c++",
 				);
+				PROVISIONING_PROFILE = "";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALID_ARCHS = "armv7 armv7s arm64";
@@ -623,7 +631,8 @@
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "iPhone Distribution: City of Raleigh (MRWDJLVR85)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
 				COPY_PHASE_STRIP = YES;
 				ENABLE_NS_ASSERTIONS = NO;
 				FRAMEWORK_SEARCH_PATHS = "$(HOME)/Library/SDKs/ArcGIS/iOS/**";
@@ -643,6 +652,7 @@
 					"-l",
 					"c++",
 				);
+				PROVISIONING_PROFILE = "";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
@@ -661,6 +671,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "iMAPSmobile/iMapsMobile-Prefix.pch";
 				INFOPLIST_FILE = "iMAPSmobile/iMapsMobile-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					/Users/grecoj/Documents/iMAPSmobile/iMAPSmobile/iMAPSmobile,
@@ -675,6 +686,7 @@
 				PRODUCT_NAME = iMapsMobile;
 				PROVISIONING_PROFILE = "";
 				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
 				VALID_ARCHS = "arm64 armv7";
 				WRAPPER_EXTENSION = app;
 			};
@@ -691,6 +703,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "iMAPSmobile/iMapsMobile-Prefix.pch";
 				INFOPLIST_FILE = "iMAPSmobile/iMapsMobile-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					/Users/grecoj/Documents/iMAPSmobile/iMAPSmobile/iMAPSmobile,
@@ -705,6 +718,7 @@
 				PRODUCT_NAME = iMapsMobile;
 				PROVISIONING_PROFILE = "";
 				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
 				VALID_ARCHS = "arm64 armv7";
 				WRAPPER_EXTENSION = app;
 			};

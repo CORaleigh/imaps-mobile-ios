@@ -33,5 +33,6 @@
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
 @property (weak, nonatomic) IBOutlet UIActivityIndicatorView *activity;
 @property (strong, nonatomic) UIView *progressView;
+@property (strong, nonatomic) UIAlertController *alertController;
 
 @end

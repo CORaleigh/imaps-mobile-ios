@@ -41,6 +41,7 @@
 
     NSURL *url = [NSURL URLWithString:@"http://maps.raleighnc.gov/iMAPS_iOS/services.txt"];
     self.jsonOp = [[AGSJSONRequestOperation alloc] initWithURL:url];
+    self.jsonOp.requestCachePolicy = NSURLRequestReloadIgnoringCacheData;
     self.jsonOp.target = self;
     self.jsonOp.action = @selector(operation:didSucceedWithResponse:);
     [self.queue addOperation:self.jsonOp];
