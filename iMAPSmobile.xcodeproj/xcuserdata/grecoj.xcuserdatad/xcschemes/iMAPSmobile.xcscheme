@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "0610"
+   LastUpgradeVersion = "1030"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -17,16 +17,16 @@
                BlueprintIdentifier = "C750761117FCB7E40055D3E8"
                BuildableName = "iMapsMobile.app"
                BlueprintName = "iMapsMobile"
-               ReferencedContainer = "container:iMapsMobile.xcodeproj">
+               ReferencedContainer = "container:iMAPSmobile.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
+      buildConfiguration = "Debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
-      shouldUseLaunchSchemeArgsEnv = "YES"
-      buildConfiguration = "Debug">
+      shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
          <TestableReference
             skipped = "NO">
@@ -35,7 +35,7 @@
                BlueprintIdentifier = "C750763517FCB7E40055D3E8"
                BuildableName = "iMapsMobileTests.xctest"
                BlueprintName = "iMapsMobileTests"
-               ReferencedContainer = "container:iMapsMobile.xcodeproj">
+               ReferencedContainer = "container:iMAPSmobile.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -45,44 +45,49 @@
             BlueprintIdentifier = "C750761117FCB7E40055D3E8"
             BuildableName = "iMapsMobile.app"
             BlueprintName = "iMapsMobile"
-            ReferencedContainer = "container:iMapsMobile.xcodeproj">
+            ReferencedContainer = "container:iMAPSmobile.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
+      <AdditionalOptions>
+      </AdditionalOptions>
    </TestAction>
    <LaunchAction
+      buildConfiguration = "Debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       launchStyle = "0"
       useCustomWorkingDirectory = "NO"
-      buildConfiguration = "Debug"
       ignoresPersistentStateOnLaunch = "NO"
       debugDocumentVersioning = "YES"
+      debugServiceExtension = "internal"
       allowLocationSimulation = "YES">
-      <BuildableProductRunnable>
+      <BuildableProductRunnable
+         runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "C750761117FCB7E40055D3E8"
             BuildableName = "iMapsMobile.app"
             BlueprintName = "iMapsMobile"
-            ReferencedContainer = "container:iMapsMobile.xcodeproj">
+            ReferencedContainer = "container:iMAPSmobile.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <AdditionalOptions>
       </AdditionalOptions>
    </LaunchAction>
    <ProfileAction
+      buildConfiguration = "Release"
       shouldUseLaunchSchemeArgsEnv = "YES"
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
-      buildConfiguration = "Release"
       debugDocumentVersioning = "YES">
-      <BuildableProductRunnable>
+      <BuildableProductRunnable
+         runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "C750761117FCB7E40055D3E8"
             BuildableName = "iMapsMobile.app"
             BlueprintName = "iMapsMobile"
-            ReferencedContainer = "container:iMapsMobile.xcodeproj">
+            ReferencedContainer = "container:iMAPSmobile.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

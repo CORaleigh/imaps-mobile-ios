@@ -14,9 +14,8 @@
 #import "ServicesWebViewController.h"
 #import "AddressesViewController.h"
 #import "SingletonData.h"
-#import "GAI.h"
-#import "GAIFields.h"
-#import "GAIDictionaryBuilder.h"
+
+#import "SVProgressHUD.h"
 
 
 @interface InfoViewController ()
@@ -24,7 +23,7 @@
 @end
 
 @implementation InfoViewController
-@synthesize info = _info, findParams = _findParams, findTask = _findTask, graphic = _graphic;
+@synthesize info = _info, queryTask = _queryTask, query = _query, graphic = _graphic, fields = _fields;
 
 - (id)initWithStyle:(UITableViewStyle)style
 {
@@ -36,35 +35,21 @@
 }
 
 
-
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-
-    // Uncomment the following line to preserve selection between presentations.
-    // self.clearsSelectionOnViewWillAppear = NO;
- 
-    // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-    // self.navigationItem.rightBarButtonItem = self.editButtonItem;
-
-    NSURL* url = [NSURL URLWithString:@"http://maps.raleighnc.gov/ArcGIS/rest/services/Parcels/MapServer"];
-    self.findTask = [[AGSFindTask alloc] initWithURL:url];
-    self.findTask.delegate = self;
-    self.findParams = [[AGSFindParameters alloc] init];
-    NSDictionary *account = [_info objectForKey:@"account"];
-    NSString *pin = [account objectForKey:@"pin"];
-    [self findProperty:pin];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(showProperty:) name:@"showPropertyNotification" object:nil];
-    [self getSepticPermits:pin];
 
 }
 
 -(void)getSepticPermits:(NSString*)pin{
     self.queue = [[NSOperationQueue alloc] init];
-    NSURL *url = [NSURL URLWithString:@"http://maps.raleighnc.gov/arcgis/rest/services/Parcels/MapServer/exts/PropertySOE/SepticPermits"];
+
+    NSURL *url = [NSURL URLWithString:@"https://maps.raleighnc.gov/arcgis/rest/services/Environmental/SepticTanks/MapServer/0/query"];
     NSMutableDictionary *params = [NSMutableDictionary dictionary];
-    [params setObject:@"jsonp" forKey:@"f"];
-    [params setObject:pin forKey:@"pin"];
+    [params setObject:@"json" forKey:@"f"];
+    [params setObject:[[@"current_pin = '" stringByAppendingString: pin] stringByAppendingString:@"'"] forKey:@"where"];
+    [params setObject:@"PERMIT_NUMBER,CURRENT_PIN" forKey:@"outFields"];
+
     self.jsonOp = [[AGSJSONRequestOperation alloc] initWithURL:url queryParameters:params];
     self.jsonOp.target = self;
     self.jsonOp.action = @selector(operation:didSucceedWithPermits:);
@@ -73,16 +58,82 @@
 }
 
 - (void)operation:(NSOperation*)op didSucceedWithPermits:(NSDictionary *)results {
-    _permits = [results objectForKey:@"SepticPermits"];
+    _permits = [results objectForKey:@"features"];
     if(_permits.count > 0) {
         
     }
 }
+-(void)initiateQueryTask {
+    NSURL* url = [NSURL URLWithString:@"https://maps.raleighnc.gov/ArcGIS/rest/services/Property/Property/MapServer/0"];
+    self.queryTask = [[AGSQueryTask alloc] initWithURL:url];
+    self.queryTask.delegate = self;
+    self.query = [[AGSQuery alloc] init];
+}
+
+-(void)setFields {
+    self.fields = [NSMutableArray new];
+    NSDictionary *account = [_info objectForKey:@"account"];
+    NSMutableDictionary *attributes = [account objectForKey:@"attributes"];
+    NSArray *fields = [_info objectForKey:@"fields"];
+    for (NSMutableDictionary *field in fields) {
+        NSString *name = [field objectForKey:@"name" ];
+        if ([name isEqualToString: @"OBJECTID"] || [attributes objectForKey:name] == [NSNull null]) {
+            
+        } else {
+            [field setValue: [attributes objectForKey:name] forKey:@"value"];
+            [self.fields addObject:field];
+        }
+    }
+    [self.tableView reloadData];
+
+}
 
 -(void)viewWillAppear:(BOOL)animated{
     [super viewWillAppear:animated];
+    //if (UI_USER_INTERFACE_IDIOM() != UIUserInterfaceIdiomPad) {
+    if (@available(iOS 13, *)) {
+        if(self.traitCollection.userInterfaceStyle == UIUserInterfaceStyleDark) {
+            self.navigationController.navigationBar.barTintColor = [UIColor blackColor];
+
+        } else {
+            self.navigationController.navigationBar.barTintColor = [UIColor whiteColor];
+        }
+    }
     self.navigationController.navigationBarHidden = NO;
     self.navigationController.toolbarHidden = NO;
+
+    //self.findTask = [[AGSFindTask alloc] initWithURL:url];
+    //self.findTask.delegate = self;
+
+    [SVProgressHUD setDefaultMaskType:SVProgressHUDMaskTypeBlack];
+    [SVProgressHUD show];
+    //self.findParams = [[AGSFindParameters alloc] init];
+
+    NSDictionary *account = [_info objectForKey:@"account"];
+    NSMutableDictionary *attributes = [account objectForKey:@"attributes"];
+
+        
+    
+    NSString *pin = [attributes objectForKey:@"PIN_NUM"];
+    
+    [self findProperty:pin];
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(showProperty:) name:@"showPropertyNotification" object:nil];
+    [self getSepticPermits:pin];
+   // }
+}
+
+
+-(void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection {
+    [super traitCollectionDidChange:previousTraitCollection];
+    if (@available(iOS 13, *)) {
+        if(self.traitCollection.userInterfaceStyle == UIUserInterfaceStyleDark) {
+            self.navigationController.navigationBar.barTintColor = [UIColor blackColor];
+
+        } else {
+            self.navigationController.navigationBar.barTintColor = [UIColor whiteColor];
+        }
+    }
 }
 
 -(void)viewDidAppear:(BOOL)animated {
@@ -90,17 +141,17 @@
     self.navigationController.toolbar.userInteractionEnabled = YES;
     self.navigationController.navigationBar.userInteractionEnabled = YES;
     
-    id tracker = [[GAI sharedInstance] defaultTracker];
-    [tracker set:kGAIScreenName value:@"Info Screen"];
-    [tracker send:[[GAIDictionaryBuilder createAppView] build]];
 }
 
 -(void)viewDidDisappear:(BOOL)animated {
     [super viewDidDisappear:animated];
     if (UI_USER_INTERFACE_IDIOM() != UIUserInterfaceIdiomPad) {
         NSMutableDictionary* dict = [NSMutableDictionary dictionary];
-        [dict setObject:[SingletonData getProperty] forKey:@"graphic"];
-        [[NSNotificationCenter defaultCenter] postNotificationName: @"addGraphicNotification" object: self userInfo: dict];
+        if ([SingletonData getProperty]) {
+            [dict setObject:[SingletonData getProperty] forKey:@"graphic"];
+            [[NSNotificationCenter defaultCenter] postNotificationName: @"addGraphicNotification" object: self userInfo: dict];
+        }
+
     }
 }
 
@@ -117,8 +168,7 @@
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
     // Return the number of sections.
-    NSMutableArray *fields = [_info objectForKey:@"fields"];
-    return [fields count];
+    return [self.fields count];
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
@@ -135,10 +185,10 @@
         cell=[[UITableViewCell alloc]initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:CellIdentifier];
     }
     
-    NSDictionary *account = [_info objectForKey:@"account"];
-    NSMutableArray *fields = [_info objectForKey:@"fields"];
-    NSDictionary *field = [fields objectAtIndex:indexPath.section];
-    NSString *fieldName = [field objectForKey:@"field"];
+   // NSDictionary *attributes = [account objectForKey:@"attributes"];
+
+    NSDictionary *field = [self.fields objectAtIndex:indexPath.section];
+    NSString *fieldName = [field objectForKey:@"name"];
     cell.textLabel.numberOfLines = 2;
     cell.textLabel.lineBreakMode = NSLineBreakByWordWrapping;
     
@@ -147,14 +197,22 @@
     NSNumberFormatter *formatter = [[NSNumberFormatter alloc] init];
     
     
-    if ([fieldType isEqualToString:@"currency"]) {
-        [formatter setNumberStyle:NSNumberFormatterCurrencyStyle];
-        cell.textLabel.text = [formatter stringFromNumber:[account objectForKey:fieldName]];
-    } else if ([fieldType isEqualToString:@"number"]) {
+    if ([fieldName isEqualToString:@"BLDG_VAL"] || [fieldName isEqualToString:@"LAND_VAL"] || [fieldName isEqualToString:@"TOTAL_VALUE_ASSD"] || [fieldName isEqualToString:@"TOTSALPRICE"]) {
+        [formatter  setNumberStyle:NSNumberFormatterCurrencyStyle];
+        cell.textLabel.text = [formatter stringFromNumber:[field objectForKey:@"value"]];
+    } else if ([fieldType isEqualToString:@"esriFieldTypeDouble"]) {
         [formatter setNumberStyle:NSNumberFormatterDecimalStyle];
-        cell.textLabel.text = [formatter stringFromNumber:[account objectForKey:fieldName]];
-    } else {
-        cell.textLabel.text= [NSString stringWithFormat:@"%@", [account objectForKey:fieldName]];
+        cell.textLabel.text = [formatter stringFromNumber:[field objectForKey:@"value"]];
+    } else if ([fieldType isEqualToString:@"esriFieldTypeDate"]) {
+        [formatter setNumberStyle:NSNumberFormatterDecimalStyle];
+        NSDate *date = [NSDate dateWithTimeIntervalSince1970:[[field objectForKey:@"value"] integerValue]/1000];
+        NSDateFormatter *dateformatter=[[NSDateFormatter alloc]init];
+        [dateformatter setLocale:[NSLocale currentLocale]];
+        [dateformatter setDateFormat:@"M/d/yyyy"];
+        NSString *dateString=[dateformatter stringFromDate:date];
+        cell.textLabel.text = dateString;
+    }  else {
+        cell.textLabel.text= [NSString stringWithFormat:@"%@", [field objectForKey:@"value"]];
     }
 
 
@@ -163,13 +221,9 @@
 
 -(NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
 {
-    NSMutableArray *fields = [_info objectForKey:@"fields"];
-    NSDictionary *field = [fields objectAtIndex:section];
+    NSDictionary *field = [self.fields objectAtIndex:section];
     return [field objectForKey:@"alias"];
 }
-
-
-
 
 - (IBAction)returnToSearch:(id)sender {
     [self performSegueWithIdentifier:@"infoToSearch" sender:self];
@@ -181,22 +235,28 @@
 }
 
 -(void)findProperty:(NSString*)pin {
-    self.findParams.layerIds = [NSArray arrayWithObjects:@"0", @"1", nil];
-    self.findParams.searchText = pin;
-    self.findParams.searchFields = [NSArray arrayWithObjects:@"PIN_NUM", nil];
-    self.findParams.returnGeometry = TRUE;
-    [self.findTask executeWithParameters:self.findParams];
-
+    [self initiateQueryTask];
+    [self setFields];
+    //if (pin == nil) {
+        pin = [[[self.info objectForKey:@"account"] objectForKey:@"attributes"] objectForKey:@"PIN_NUM"];
+    //}
+    //if (pin != nil) {
+        self.query.whereClause = [[@"PIN_NUM = '" stringByAppendingString:pin] stringByAppendingString:@"'"];
+        self.query.returnGeometry = TRUE;
+        [self.queryTask executeWithQuery:self.query];
+    //}
 }
 
 #pragma mark - AGSFindTaskDelegate
--(void)findTask:(AGSFindTask *)findTask operation:(NSOperation *)op didExecuteWithFindResults:(NSArray *)results {
-    AGSFindResult *result = [results objectAtIndex:0];
-    self.graphic = result.feature;
+-(void)queryTask:(AGSQueryTask *)queryTask operation:(NSOperation *)op didExecuteWithFeatureSetResult:(AGSFeatureSet *)featureSet {
+
+    self.graphic = [[featureSet features] objectAtIndex:0];
+    //self.graphic = result.feature;
     [SingletonData setProperty:self.graphic];
     NSMutableDictionary* dict = [NSMutableDictionary dictionary];
     [dict setObject:self.graphic forKey:@"graphic"];
-    
+    [SVProgressHUD dismiss];
+
     self.navigationController.toolbar.userInteractionEnabled = YES;
     if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
         NSMutableDictionary* dict = [NSMutableDictionary dictionary];
@@ -209,110 +269,62 @@
 }
 
 -(void)showProperty: (NSNotification*) notification {
+
     self.info = notification.userInfo;
     [self.tableView reloadData];
+        if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
+
+    
+    [[UIApplication sharedApplication] sendAction:self.splitViewController.displayModeButtonItem.action to:self.splitViewController.displayModeButtonItem.target from:nil forEvent:nil ];
+        }
     NSDictionary *account = [_info objectForKey:@"account"];
-    NSString *pin = [account objectForKey:@"pin"];
-    [self findProperty:pin];
+    NSString *pin = [[account objectForKey:@"attributes"] objectForKey:@"PIN_NUM"];
+    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
+        [self findProperty:pin];
+        if (self.splitViewController.displayMode == UISplitViewControllerDisplayModeAllVisible) {
+            [[NSNotificationCenter defaultCenter] removeObserver:self];
+            [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(showProperty:) name:@"showPropertyNotification" object:nil];
+            [self getSepticPermits:pin];
+        }
+    }
 }
 
-#pragma mark - UIActionSheetDelegate methods
--(void)actionSheet:(UIActionSheet *)actionSheet didDismissWithButtonIndex:(NSInteger)buttonIndex
-{
-    
-    id tracker = [[GAI sharedInstance] defaultTracker];
-//    switch (buttonIndex) {
-//        case 0://photos
-//            [self performSegueWithIdentifier:@"infoToPhotos" sender:self];
-//            [tracker send:[[GAIDictionaryBuilder createEventWithCategory:@"Info Events" action:@"Viewed Additional Info" label:@"Photos" value:nil] build]];
-//            break;
-//        case 1://deeds
-//            [self performSegueWithIdentifier:@"infoToDeeds" sender:self];
-//            [tracker send:[[GAIDictionaryBuilder createEventWithCategory:@"Info Events" action:@"Viewed Additional Info" label:@"Deeds" value:nil] build]];
-//            break;
-//        case 2://taxInfo
-//            [self performSegueWithIdentifier:@"infoToTaxes" sender:self];
-//            [tracker send:[[GAIDictionaryBuilder createEventWithCategory:@"Info Events" action:@"Viewed Additional Info" label:@"Real Estate" value:nil] build]];
-//            break;
-//        case 3://services
-//            [self performSegueWithIdentifier:@"infoToServices" sender:self];
-//            [tracker send:[[GAIDictionaryBuilder createEventWithCategory:@"Info Events" action:@"Viewed Additional Info" label:@"Services" value:nil] build]];
-//            break;
-//        case 4://addresses
-//            [self performSegueWithIdentifier:@"infoToAddresses" sender:self];
-//            [tracker send:[[GAIDictionaryBuilder createEventWithCategory:@"Info Events" action:@"Viewed Additional Info" label:@"Addresses" value:nil] build]];
-//            break;
-//        case 5://crime
-//            if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:@"Crime Activity"]) {
-//                [[UIApplication sharedApplication] openURL:[NSURL URLWithString:[NSString stringWithFormat:@"http://mapstest.raleighnc.gov/crime/?pin=%@",[account objectForKey:@"pin"]]]];
-//                [tracker send:[[GAIDictionaryBuilder createEventWithCategory:@"Info Events" action:@"Viewed Additional Info" label:@"Crime" value:nil] build]];
-//            }
-//
-//        default:
-//            break;
-            if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:@"Photos"]) {
-                [self performSegueWithIdentifier:@"infoToPhotos" sender:self];
-                [tracker send:[[GAIDictionaryBuilder createEventWithCategory:@"Info Events" action:@"Viewed Additional Info" label:@"Photos" value:nil] build]];
-            }
-            else if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:@"Deeds & Plats"]) {
-                [self performSegueWithIdentifier:@"infoToDeeds" sender:self];
-                [tracker send:[[GAIDictionaryBuilder createEventWithCategory:@"Info Events" action:@"Viewed Additional Info" label:@"Deeds" value:nil] build]];
-            }
-            else if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:@"Tax Info"]) {
-                [self performSegueWithIdentifier:@"infoToTaxes" sender:self];
-                [tracker send:[[GAIDictionaryBuilder createEventWithCategory:@"Info Events" action:@"Viewed Additional Info" label:@"Real Estate" value:nil] build]];
-            }
-            else if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:@"Services"]) {
-                [self performSegueWithIdentifier:@"infoToServices" sender:self];
-                [tracker send:[[GAIDictionaryBuilder createEventWithCategory:@"Info Events" action:@"Viewed Additional Info" label:@"Services" value:nil] build]];
-            }
-            else if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:@"Addresses"]) {
-                [self performSegueWithIdentifier:@"infoToAddresses" sender:self];
-                [tracker send:[[GAIDictionaryBuilder createEventWithCategory:@"Info Events" action:@"Viewed Additional Info" label:@"Addresses" value:nil] build]];
-            }
-            else if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:@"Septic Permits"]) {
-                [self performSegueWithIdentifier:@"infoToSeptic" sender:self];
-                [tracker send:[[GAIDictionaryBuilder createEventWithCategory:@"Info Events" action:@"Viewed Additional Info" label:@"Septic Permits" value:nil] build]];
-            }
-    
-   // }
-}
-- (IBAction)showActionSheet:(id)sender {
-    id tracker = [[GAI sharedInstance] defaultTracker];
+- (IBAction)showActionSheet:(UIBarButtonItem *)sender {
 
-    if ([UIAlertController class]) {
+   // if ([UIAlertController class]) {
         UIAlertControllerStyle style = UIAlertControllerStyleActionSheet;
         UIDeviceOrientation orient = [UIDevice currentDevice].orientation;
         if (UIDeviceOrientationIsLandscape(orient)) {
             style = UIAlertControllerStyleAlert;
         }
         UIAlertController* alert = [UIAlertController alertControllerWithTitle:@"More Information" message:nil preferredStyle:style];
-        UIAlertAction* photos = [UIAlertAction actionWithTitle:@"Photos" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+        UIAlertAction* photos = [UIAlertAction actionWithTitle:NSLocalizedString(@"Photos", nil) style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
             [self performSegueWithIdentifier:@"infoToPhotos" sender:self];
-            [tracker send:[[GAIDictionaryBuilder createEventWithCategory:@"Info Events" action:@"Viewed Additional Info" label:@"Photos" value:nil] build]];
         }];
-        UIAlertAction* deeds = [UIAlertAction actionWithTitle:@"Deeds & Plats" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+        UIAlertAction* deeds = [UIAlertAction actionWithTitle:NSLocalizedString(@"Deeds & Plats", nil) style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
             [self performSegueWithIdentifier:@"infoToDeeds" sender:self];
-            [tracker send:[[GAIDictionaryBuilder createEventWithCategory:@"Info Events" action:@"Viewed Additional Info" label:@"Deeds" value:nil] build]];
         }];
-        UIAlertAction* taxes = [UIAlertAction actionWithTitle:@"Tax Info" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+        UIAlertAction* taxes = [UIAlertAction actionWithTitle:NSLocalizedString(@"Tax Info", nil) style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
             [self performSegueWithIdentifier:@"infoToTaxes" sender:self];
-            [tracker send:[[GAIDictionaryBuilder createEventWithCategory:@"Info Events" action:@"Viewed Additional Info" label:@"Real Estate" value:nil] build]];
         }];
-        UIAlertAction* services = [UIAlertAction actionWithTitle:@"Services" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+        UIAlertAction* services = [UIAlertAction actionWithTitle:NSLocalizedString(@"Services", nil) style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
             [self performSegueWithIdentifier:@"infoToServices" sender:self];
-            [tracker send:[[GAIDictionaryBuilder createEventWithCategory:@"Info Events" action:@"Viewed Additional Info" label:@"Services" value:nil] build]];
         }];
-        UIAlertAction* addresses = [UIAlertAction actionWithTitle:@"Addresses" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+        UIAlertAction* addresses = [UIAlertAction actionWithTitle:NSLocalizedString(@"Addresses", nil) style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
             [self performSegueWithIdentifier:@"infoToAddresses" sender:self];
-            [tracker send:[[GAIDictionaryBuilder createEventWithCategory:@"Info Events" action:@"Viewed Additional Info" label:@"Addresses" value:nil] build]];
         }];
         
-        UIAlertAction* septic = [UIAlertAction actionWithTitle:@"Septic Permits" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
-            [self performSegueWithIdentifier:@"infoToSeptic" sender:self];
-            [tracker send:[[GAIDictionaryBuilder createEventWithCategory:@"Info Events" action:@"Viewed Additional Info" label:@"Septic Permits" value:nil] build]];
+        UIAlertAction* septic = [UIAlertAction actionWithTitle:NSLocalizedString(@"Septic Permits", nil) style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+            //[self performSegueWithIdentifier:@"infoToSeptic" sender:self];
+            UIApplication *application = [UIApplication sharedApplication];
+            NSString *urlString = [@"https://maps.wakegov.com/septic/index.html#/?pin=" stringByAppendingString: [[[self.info objectForKey:@"account"] objectForKey:@"attributes"] objectForKey:@"PIN_NUM"]];
+
+            NSURL *URL = [NSURL URLWithString:urlString];
+            [application openURL:URL options:@{} completionHandler:nil];
+
+
         }];
-        UIAlertAction* cancel = [UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {
+        UIAlertAction* cancel = [UIAlertAction actionWithTitle:NSLocalizedString(@"Cancel", nil) style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {
             [alert dismissViewControllerAnimated:YES completion:nil];
         }];
 
@@ -325,26 +337,11 @@
             [alert addAction:septic];
         }
         [alert addAction:cancel];
+        if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
+            [alert.popoverPresentationController setBarButtonItem:sender];
+        }
         [self presentViewController:alert animated:YES completion:nil];
         
-    } else {
-        UIActionSheet *actionSheet = nil;
-        //NSDictionary *account = [_info objectForKey:@"account"];
-        //NSString *city = [account objectForKey:@"city"];
-        /*if ([city.uppercaseString isEqualToString:@"RALEIGH"]) {
-         actionSheet = [[UIActionSheet alloc] initWithTitle:@"More Information" delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:nil otherButtonTitles:@"Photos",@"Deeds & Plats",@"Tax Info", @"Services", @"Addresses", @"Crime Activity", nil];
-         } else {*/
-        
-        if (self.permits.count == 0) {
-            actionSheet = [[UIActionSheet alloc] initWithTitle:@"More Information" delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:nil otherButtonTitles:@"Photos",@"Deeds & Plats",@"Tax Info", @"Services", @"Addresses", nil];
-        } else {
-            actionSheet = [[UIActionSheet alloc] initWithTitle:@"More Information" delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:nil otherButtonTitles:@"Photos",@"Deeds & Plats",@"Tax Info", @"Services", @"Addresses",@"Septic Permits", nil];
-        }
-        
-        //}
-        actionSheet.cancelButtonIndex = actionSheet.numberOfButtons - 1;
-        [actionSheet showInView:self.view];
-    }
 }
 
 -(void)findTask:(AGSFindTask *)findTask operation:(NSOperation *)op didFailWithError:(NSError *)error{
@@ -354,8 +351,8 @@
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
 {
     NSDictionary *account = [_info objectForKey:@"account"];
-    NSString *reid = [account objectForKey:@"reid"];
-    NSString *pin = [account objectForKey:@"pin"];
+    NSString *reid = [[account objectForKey:@"attributes"] objectForKey:@"REID"];
+    NSString *pin =  [[account objectForKey:@"attributes"] objectForKey:@"PIN_NUM"];
     if ([[segue identifier] isEqualToString:@"infoToMap"]){
         
         [segue.destinationViewController performSelector:@selector(setProperty:)

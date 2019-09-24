@@ -7,9 +7,6 @@
 //
 
 #import "TaxViewController.h"
-#import "GAI.h"
-#import "GAIFields.h"
-#import "GAIDictionaryBuilder.h"
 
 @interface TaxViewController ()
 
@@ -30,34 +27,60 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-
+    // Do any additional setup after loading the view.
+    self.navigationController.toolbar.userInteractionEnabled = YES;
+    self.navigationController.navigationBar.userInteractionEnabled = YES;
+    [_webView setOpaque:NO];
+    _webView.scrollView.scrollEnabled = NO;
+    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
+        //        _webView.scalesPageToFit = NO;
+    } else {
+        //        _webView.scalesPageToFit = YES;
+    }
+    _webView.scrollView.bounces = NO;
+    //self.webView.delegate = self;
     
     NSMutableString *baseUrl = [NSMutableString stringWithString:@"http://services.wakegov.com/realestate/Account.asp?id="];
     NSURL* url = [NSURL URLWithString:[baseUrl stringByAppendingString:_reid]];
     NSURLRequest *request = [[NSURLRequest alloc] initWithURL:url];
-    [self.webView setScalesPageToFit:YES];
+   // [self.webView setScalesPageToFit:YES];
     [self.webView loadRequest:request];
-    self.webView.delegate = self;
+    //self.webView.delegate = self;
 }
 
-- (void)viewDidAppear:(BOOL)animated {
-    [super viewDidAppear:animated];
-    
-    id tracker = [[GAI sharedInstance] defaultTracker];
-    [tracker set:kGAIScreenName value:@"Real Estate Screen"];
-    [tracker send:[[GAIDictionaryBuilder createAppView] build]];
-}
 
+-(void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    if (@available(iOS 13, *)) {
+        if(self.traitCollection.userInterfaceStyle == UIUserInterfaceStyleDark) {
+            self.navigationController.navigationBar.barTintColor = [UIColor blackColor];
+
+        } else {
+            self.navigationController.navigationBar.barTintColor = [UIColor whiteColor];
+        }
+    }
+}
+-(void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection {
+    [super traitCollectionDidChange:previousTraitCollection];
+    if (@available(iOS 13, *)) {
+        if(self.traitCollection.userInterfaceStyle == UIUserInterfaceStyleDark) {
+            self.navigationController.navigationBar.barTintColor = [UIColor blackColor];
+
+        } else {
+            self.navigationController.navigationBar.barTintColor = [UIColor whiteColor];
+        }
+    }
+}
 - (void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
 }
 
--(void)webViewDidFinishLoad:(UIWebView *)webView {
-
-    [self.backButton setEnabled:(self.webView.canGoBack)];
-}
+//-(void)webViewDidFinishLoad:(UIWebView *)webView {
+//
+//    [self.backButton setEnabled:(self.webView.canGoBack)];
+//}
 
 
 - (IBAction)backButtonTap:(id)sender {
@@ -65,6 +88,22 @@
         [self.webView goBack];
     }
 }
+
+//-(void)viewDidLayoutSubviews {
+//    [super viewDidLayoutSubviews];
+//    //self.webView.frame = self.view.frame;
+//    CGRect rect = self.view.frame;
+//
+//    int statusBarHeight = 20;
+//
+//    int navBarHeight = self.navigationController.navigationBar.frame.size.height;
+//
+//
+//
+//    rect.origin.y = statusBarHeight + navBarHeight;
+//    rect.size.height -= navBarHeight - statusBarHeight;
+//    [_webView setFrame:rect];
+//}
 
 - (IBAction)doneButtonTapped:(id)sender {
     [self dismissViewControllerAnimated:YES completion:nil];

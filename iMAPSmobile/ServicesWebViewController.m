@@ -36,16 +36,17 @@
     
     
     self.queue = [[NSOperationQueue alloc] init];
-    [SVProgressHUD showWithMaskType:SVProgressHUDMaskTypeBlack];
+    [SVProgressHUD setDefaultMaskType:SVProgressHUDMaskTypeBlack];
+    [SVProgressHUD show];
     
 
-    NSURL *url = [NSURL URLWithString:@"http://maps.raleighnc.gov/iMAPS_iOS/services.txt"];
+    NSURL *url = [NSURL URLWithString:@"https://maps.raleighnc.gov/iMAPS_iOS/services.txt"];
     self.jsonOp = [[AGSJSONRequestOperation alloc] initWithURL:url];
     self.jsonOp.requestCachePolicy = NSURLRequestReloadIgnoringCacheData;
     self.jsonOp.target = self;
     self.jsonOp.action = @selector(operation:didSucceedWithResponse:);
     [self.queue addOperation:self.jsonOp];
-    self.webView.delegate = self;
+    //self.webView.delegate = self;
 }
 
 - (void)didReceiveMemoryWarning
@@ -56,7 +57,7 @@
 
 
 - (void)operation:(NSOperation*)op didSucceedWithResponse:(NSDictionary *) results {
-    NSURL *url = [NSURL URLWithString:@"http://maps.raleighnc.gov/ArcGIS/rest/services/Parcels/MapServer"];
+    NSURL *url = [NSURL URLWithString:@"https://maps.raleighnc.gov/arcgis/rest/services/Parcels/MapServer"];
     
     _config = results;
     self.findTask = [[AGSFindTask alloc] initWithURL:url];
@@ -75,6 +76,19 @@
     self.findParams.layerIds = [NSArray arrayWithObjects:@"0",@"1", nil];
     self.findParams.returnGeometry = YES;
     [self.findTask executeWithParameters:self.findParams];
+}
+
+- (void) webView:(WKWebView *)webView2 decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler {
+    if (![navigationAction.request.URL.absoluteString isEqualToString:@"about:blank"]) {
+        decisionHandler(WKNavigationActionPolicyCancel);
+        UIApplication *application = [UIApplication sharedApplication];
+        [application openURL:navigationAction.request.URL options:@{} completionHandler:nil];
+    } else {
+        decisionHandler(WKNavigationActionPolicyAllow);
+
+    }
+
+    
 }
 
 #pragma mark - Find
@@ -141,7 +155,8 @@
 }
 
 - (void) buildHtml:(NSArray *) results {
-    NSMutableString *html = [NSMutableString stringWithString:(NSString *)@"<html><head></head><body style='font-family:Arial'>"];
+    
+    NSMutableString *html = [NSMutableString stringWithString:(NSString *)@"<html><head><meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no'></head><body style='font-family:Arial;'>"];
     NSArray *cats = [_config objectForKey:@"categories"];
     NSString *lastLine = @"";
     for (NSDictionary *cat in cats) {
@@ -185,10 +200,17 @@
             }
         }
     }
+    
+
+
 
     html = [self checkCategoryHasValues:html];
     [html appendString:@"</body></html>"];
     [self.webView loadHTMLString:html baseURL:nil];
+
+    self.webView.navigationDelegate = self;
+    
+    
 }
 
 - (NSString*) replaceWithFieldValue: (NSString*) value result: (AGSIdentifyResult*) result {
@@ -210,15 +232,14 @@
     return value;
 }
 
-- (BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType {
-    if (![request.URL isEqual:[NSURL URLWithString:@"about:blank"]]) {
-        [[UIApplication sharedApplication] openURL:request.URL];
-        return FALSE;
-    } else {
-        return TRUE;
-    }
-
-}
+//- (BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType {
+//    if (![request.URL isEqual:[NSURL URLWithString:@"about:blank"]]) {
+//        [[UIApplication sharedApplication] openURL:request.URL];
+//        return FALSE;
+//    } else {
+//        return TRUE;
+//    }
+//}
 
 
 

@@ -14,11 +14,7 @@
 #import "LayersViewController.h"
 #import "BaseMapsSegementedController.h"
 #import "SearchController.h"
-#import "StreetViewController.h"
 #import "SVProgressHUD.h"
-#import "GAI.h"
-#import "GAIFields.h"
-#import "GAIDictionaryBuilder.h"
 #import "Reachability.h"
 
 @interface MapViewController ()
@@ -29,7 +25,7 @@
 @implementation MapViewController
 
 @synthesize property = _property, propertyGl = _propertyGl, queryTask = _queryTask, query
- = _query, pin = _pin, account = _account, accounts = _accounts, fields = _fields, gpsButton = _gpsButton, masterPopoverController = _masterPopoverController, idTask = _idTask, idParams = _idParams, idCount = _idCount, idTotal = _idTotal, idResults = _idResults, idGraphic = _idGraphic, lastView = _lastView, geoService = _geoService, streetViewUrl = _streetViewUrl;
+ = _query, pin = _pin, account = _account, accounts = _accounts, fields = _fields, gpsButton = _gpsButton, idTask = _idTask, idParams = _idParams, idCount = _idCount, idTotal = _idTotal, idResults = _idResults, idGraphic = _idGraphic, lastView = _lastView, geoService = _geoService, streetViewUrl = _streetViewUrl;
 @synthesize jsonOp = _jsonOp;
 @synthesize queue = _queue;
 
@@ -57,15 +53,17 @@
 }
 
 
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];
     [self configureView];
-    
 
     
     self.navigationController.navigationBarHidden = NO;
     self.navigationController.toolbarHidden = NO;
+    self.navigationController.navigationBar.translucent = NO;
+    self.navigationController.toolbar.translucent = NO;
     
     
     UIButton *button = [UIButton buttonWithType:UIButtonTypeInfoLight];
@@ -90,7 +88,7 @@
     }
     
     self.queue = [[NSOperationQueue alloc] init];
-
+    
     if ([SingletonData getBaseLayer]) {
         [self.mapView addMapLayer:[self getBaseLayer:[SingletonData getBaseLayer]]];
     } else {
@@ -115,7 +113,7 @@
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(respondToEnvChange:)
                                                  name:AGSMapViewDidEndZoomingNotification object:nil];
     
-    NSURL *url = [NSURL URLWithString:@"http://maps.raleighnc.gov/ArcGIS/rest/services/Parcels/MapServer/0"];
+    NSURL *url = [NSURL URLWithString:@"https://maps.raleighnc.gov/ArcGIS/rest/services/Property/Property/MapServer/0"];
     self.queryTask = [[AGSQueryTask alloc] initWithURL:url];
     self.queryTask.delegate = self;
     
@@ -123,26 +121,31 @@
     self.idTask = [[AGSIdentifyTask alloc] init];
     self.idParams = [[AGSIdentifyParameters alloc]init];
     
-    self.geoService = [[AGSGeometryServiceTask alloc] initWithURL:[NSURL URLWithString:@"http://maps.raleighnc.gov/arcgis/rest/services/Utilities/Geometry/GeometryServer"]];
-    self.geoService.delegate = self;
-    
+   
     
     self.query = [AGSQuery query];
+    
 }
 
 
 
 
-- (void) alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex {
-    [self testNetworkConnection];
-}
+
 
 - (void) handleNetworkUnavailable {
-    UIAlertView* av = [[UIAlertView alloc] initWithTitle:@"Connection Issue"
-												 message:@"Internet Connection Not Detected"
-												delegate:self cancelButtonTitle:@"Retry"
-									   otherButtonTitles:nil];
-	[av show];
+    UIAlertController * alert = [UIAlertController
+                                 alertControllerWithTitle:NSLocalizedString(@"Connection Issue", nil)
+                                 message:NSLocalizedString(@"Internet Connection Not Detected", nil)
+                                 preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertAction* okButton = [UIAlertAction
+                               actionWithTitle:NSLocalizedString(@"Retry", nil)
+                               style:UIAlertActionStyleDefault
+                               handler:^(UIAlertAction * action) {
+                                   [self testNetworkConnection];
+                               }];
+    [alert addAction:okButton];
+    
+    [self presentViewController:alert animated:YES completion:nil];
 }
 
 - (void) testNetworkConnection {
@@ -156,7 +159,7 @@
 }
 
 - (void) getConfig {
-    NSURL *url = [NSURL URLWithString:@"http://maps.raleighnc.gov/iMAPS_iOS/config.txt"];
+    NSURL *url = [NSURL URLWithString:@"https://maps.raleighnc.gov/iMAPS_iOS/config.txt"];
     self.jsonOp = [[AGSJSONRequestOperation alloc] initWithURL:url];
     self.jsonOp.target = self;
     self.jsonOp.action = @selector(operation:didSucceedWithConfig:);
@@ -180,7 +183,7 @@
 }
 
 - (void) addLabelsMapService {
-    NSURL *url = [NSURL URLWithString:@"http://maps.raleighnc.gov/arcgis/rest/services/Labels/MapServer"];
+    NSURL *url = [NSURL URLWithString:@"https://maps.raleighnc.gov/arcgis/rest/services/Labels/MapServer"];
     AGSTiledMapServiceLayer *labelsLayer = [AGSTiledMapServiceLayer tiledMapServiceLayerWithURL:url];
     [labelsLayer setVisible:NO];
     [self.mapView addMapLayer:labelsLayer withName:@"Labels"];
@@ -201,28 +204,23 @@
     return baseLayer;
 }
 
-
 // The method that should be called when the notification arises
 - (void)respondToEnvChange: (NSNotification*) notification {
     if (self.mapView.mapScale < 600) {
         [self.mapView zoomToScale:601 animated:NO];
     }
-}
-
-
-
--(void)viewWillAppear:(BOOL)animated {
-    [super viewWillAppear:animated];
-    self.navigationController.toolbarHidden = NO;
-
     
 }
+
+
+
 
 -(void)viewDidAppear:(BOOL)animated {
-    id tracker = [[GAI sharedInstance] defaultTracker];
-    [tracker set:kGAIScreenName value:@"Map Screen"];
-    [tracker send:[[GAIDictionaryBuilder createAppView] build]];
+    [super viewDidAppear:animated];
+
     
+    self.navigationController.navigationBarHidden = NO;
+    self.navigationController.toolbarHidden = NO;
     self.navigationController.toolbar.userInteractionEnabled = YES;
     self.navigationController.navigationBar.userInteractionEnabled = YES;
     
@@ -233,6 +231,7 @@
 -(void)mapViewDidLoad:(AGSMapView*) mapView {
     _propertyGl = [AGSGraphicsLayer graphicsLayer];
     [self.mapView addMapLayer:_propertyGl withName:@"Property Selection"];
+    
     if(mapView.loaded)
     {
         if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone) {
@@ -244,8 +243,8 @@
                 AGSMapView *savedMap = [SingletonData getMapView];
                 [self.mapView zoomToEnvelope:savedMap.visibleArea.envelope animated:NO];
             } else {
-                [self setIsGpsOn:YES];
-                [self startGPS];
+                //[self setIsGpsOn:YES];
+                //[self startGPS];
             }
         }
 
@@ -276,13 +275,22 @@
         AGSPolygon *wakeBounds = [AGSPolygon polygonWithJSON: [json ags_JSONValue]];
         if (![wakeBounds containsPoint:location.point]) {
             self.isGpsOn = false;
-            self.gpsButton.title = @"GPS Off";
+            self.gpsButton.title = NSLocalizedString(@"GPS Off", nil);
+            [self.gpsButton setImage: [UIImage imageNamed:@"gps"]];
             [self.mapView.locationDisplay stopDataSource];
-            UIAlertView* av = [[UIAlertView alloc] initWithTitle:@"Sorry"
-                                                         message:@"You are currently located outside of Wake County"
-                                                        delegate:nil cancelButtonTitle:@"OK"
-                                               otherButtonTitles:nil];
-            [av show];
+
+            UIAlertController * alert = [UIAlertController
+                                         alertControllerWithTitle:NSLocalizedString(@"Sorry", nil)
+                                         message:NSLocalizedString(@"You are currently located outside of Wake County", nil)
+                                         preferredStyle:UIAlertControllerStyleAlert];
+            UIAlertAction* okButton = [UIAlertAction
+                                       actionWithTitle:NSLocalizedString(@"OK", nil)
+                                       style:UIAlertActionStyleDefault
+                                       handler:^(UIAlertAction * action) {
+                                       }];
+            [alert addAction:okButton];
+            
+            [self presentViewController:alert animated:YES completion:nil];
         } else {
             self.isInCounty = true;
             [self.mapView.locationDisplay stopDataSource];
@@ -311,11 +319,11 @@
         //[self.mapView.locationDisplay.dataSource setDelegate:self];
         [self.mapView.locationDisplay addObserver:self forKeyPath:@"location" options:(NSKeyValueObservingOptionNew) context:NULL];
         self.mapView.locationDisplay.autoPanMode = AGSLocationDisplayAutoPanModeDefault;
-        self.gpsButton.title = @"GPS On";
+        self.gpsButton.title = NSLocalizedString(@"GPS On", nil);
+        [self.gpsButton setImage: [UIImage imageNamed:@"gps-on"]];
+
         [self.mapView.locationDisplay startDataSource];
         
-        id tracker = [[GAI sharedInstance] defaultTracker];
-        [tracker send:[[GAIDictionaryBuilder createEventWithCategory:@"Map Events" action:@"GPS Enabled" label:@"Yes" value:nil] build]];
     }
 }
 
@@ -336,15 +344,25 @@
         AGSPolygon *wakeBounds = [AGSPolygon polygonWithJSON: [json ags_JSONValue]];
         if (![wakeBounds containsPoint:location]) {
             self.isGpsOn = false;
-            self.gpsButton.title = @"GPS Off";
+            self.gpsButton.title = NSLocalizedString(@"GPS Off", nil);
+            [self.gpsButton setImage: [UIImage imageNamed:@"gps"]];
+
             [self.mapView.locationDisplay stopDataSource];
-            //[self.mapView zoomToEnvelope:self.mapView.maxEnvelope animated:YES];
+
+
+            UIAlertController * alert = [UIAlertController
+                                         alertControllerWithTitle:NSLocalizedString(@"Sorry", nil)
+                                         message:NSLocalizedString(@"You are currently located outside of Wake County", nil)
+                                         preferredStyle:UIAlertControllerStyleAlert];
+            UIAlertAction* okButton = [UIAlertAction
+                                       actionWithTitle:NSLocalizedString(@"OK", nil)
+                                       style:UIAlertActionStyleDefault
+                                       handler:^(UIAlertAction * action) {
+                                       }];
+            [alert addAction:okButton];
             
-            UIAlertView* av = [[UIAlertView alloc] initWithTitle:@"Sorry"
-                                                         message:@"You are currently located outside of Wake County"
-                                                        delegate:nil cancelButtonTitle:@"OK"
-                                               otherButtonTitles:nil];
-            [av show];
+            [self presentViewController:alert animated:YES completion:nil];
+            
         } else {
             self.isInCounty = true;
         }
@@ -359,7 +377,9 @@
 
 -(void)viewDidDisappear:(BOOL)animated {
     [super viewDidDisappear:animated];
-    self.gpsButton.title = @"GPS Off";
+    self.gpsButton.title = NSLocalizedString(@"GPS Off", nil);
+    [self.gpsButton setImage: [UIImage imageNamed:@"gps"]];
+
     [[self.mapView locationDisplay] stopDataSource];
 }
 
@@ -396,28 +416,50 @@
 
 #pragma mark - Split view
 
+- (void)splitViewController:(UISplitViewController *)splitController willChangeToDisplayMode:(UISplitViewControllerDisplayMode)displayMode  {
+    if (splitController.displayMode != UISplitViewControllerDisplayModePrimaryHidden)
+    {
+        UIBarButtonItem *barButtonItem = splitController.displayModeButtonItem;
 
 
-- (void)splitViewController:(UISplitViewController *)splitController willHideViewController:(UIViewController *)viewController withBarButtonItem:(UIBarButtonItem *)barButtonItem forPopoverController:(UIPopoverController *)popoverController
-{
-    barButtonItem.title = NSLocalizedString(@"Search", @"Search");
-    [self.navigationItem setLeftBarButtonItem:barButtonItem animated:YES];
-    self.masterPopoverController = popoverController;
-    [SingletonData setPopover:popoverController];
+        self.navigationItem.leftBarButtonItem = barButtonItem;
+    }
 }
 
-- (void)splitViewController:(UISplitViewController *)splitController willShowViewController:(UIViewController *)viewController invalidatingBarButtonItem:(UIBarButtonItem *)barButtonItem
-{
-    // Called when the view is shown again in the split view, invalidating the button and popover controller.
-    [self.navigationItem setLeftBarButtonItem:nil animated:YES];
-    self.masterPopoverController = nil;
+-(void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection {
+    [super traitCollectionDidChange:previousTraitCollection];
+
+    if (@available(iOS 13, *)) {
+        if(self.traitCollection.userInterfaceStyle == UIUserInterfaceStyleDark) {
+            self.navigationController.navigationBar.barTintColor = [UIColor blackColor];
+
+        } else {
+            self.navigationController.navigationBar.barTintColor = [UIColor whiteColor];
+
+        }
+    }
 }
+-(void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
 
-- (void)popoverControllerDidDismissPopover:(UIPopoverController *)popoverController {
-    self.navigationController.toolbar.userInteractionEnabled = YES;
+    if (@available(iOS 13, *)) {
+        if(self.traitCollection.userInterfaceStyle == UIUserInterfaceStyleDark) {
+            self.navigationController.navigationBar.barTintColor = [UIColor blackColor];
+
+        } else {
+            self.navigationController.navigationBar.barTintColor = [UIColor whiteColor];
+        }
+    }
+    if (self.splitViewController.displayMode == UISplitViewControllerDisplayModePrimaryHidden)
+    {
+        UIBarButtonItem *barButtonItem = self.splitViewController.displayModeButtonItem;
+
+
+        self.navigationItem.leftBarButtonItem = barButtonItem;
+    }
+    
+    
 }
-
-
 
 
 #pragma mark - Navigation
@@ -425,42 +467,37 @@
 // In a story board-based application, you will often want to do a little preparation before navigation
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
 {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
+//    // Get the new view controller using [segue destinationViewController].
+//    // Pass the selected object to the new view controller.
     NSMutableDictionary* info = [NSMutableDictionary dictionary];
-    
+//
     if ([[segue identifier] isEqualToString:@"mapToLayers"]){
         if ([segue.destinationViewController respondsToSelector:@selector(setMapView:)]) {
-            [segue.destinationViewController performSelector:@selector(setMapView:)
-                                                  withObject:_mapView];
-        } else {
-
-                [self.masterPopoverController dismissPopoverAnimated:YES];
-                UINavigationController *navController = segue.destinationViewController;
-                LayersViewController *lvc = (LayersViewController *)navController.topViewController;
-                lvc.mapView = _mapView;
-                UIStoryboardPopoverSegue *pop = (UIStoryboardPopoverSegue*)segue;
-                self.masterPopoverController = pop.popoverController;
-                pop.popoverController.delegate = self;
-                //self.navigationController.toolbar.userInteractionEnabled = NO;
-
+            if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
+                UIViewController *dvc = segue.destinationViewController;
+                UIPopoverPresentationController *controller = dvc.popoverPresentationController;
+                if (controller) {
+                    controller.delegate = self;
+                }
+            } else {
+                [segue.destinationViewController performSelector:@selector(setMapView:)
+                                                      withObject:_mapView];
+            }
         }
     }
     else if ([[segue identifier] isEqualToString:@"mapToBasemaps"]){
-            if ([segue.destinationViewController respondsToSelector:@selector(setMapView:)]) {
-                [segue.destinationViewController performSelector:@selector(setMapView:)
-                                                          withObject:_mapView];
+        if ([segue.destinationViewController respondsToSelector:@selector(setMapView:)]) {
+            if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
+                UIViewController *dvc = segue.destinationViewController;
+                UIPopoverPresentationController *controller = dvc.popoverPresentationController;
+                if (controller) {
+                    controller.delegate = self;
+                }
             } else {
-
-                    [self.masterPopoverController dismissPopoverAnimated:YES];
-                    UINavigationController *navController = segue.destinationViewController;
-                    LayersViewController *lvc = (LayersViewController *)navController.topViewController;
-                    lvc.mapView = _mapView;
-                    UIStoryboardPopoverSegue *pop = (UIStoryboardPopoverSegue*)segue;
-                    self.masterPopoverController = pop.popoverController;
-                    pop.popoverController.delegate = self;
-                    //self.navigationController.toolbar.userInteractionEnabled = NO;
+                [segue.destinationViewController performSelector:@selector(setMapView:)
+                                                      withObject:_mapView];
             }
+        }
     } else if ([[segue identifier] isEqualToString:@"mapToResults"]){
         if ([segue.destinationViewController respondsToSelector:@selector(setInfo:)]) {
             [info setObject:self.fields forKey:@"fields"];
@@ -475,112 +512,34 @@
             [segue.destinationViewController performSelector:@selector(setInfo:)
                                                   withObject:info];
         }
-    } else if ([[segue identifier] isEqualToString:@"mapToStreetview"]) {
-        UINavigationController *nav = segue.destinationViewController;
-        StreetViewController *svc = [nav.childViewControllers objectAtIndex:0];
-        [svc performSelector:@selector(setStreetViewUrl:) withObject:self.streetViewUrl];
     }
 }
 
--(UIModalPresentationStyle)adaptivePresentationStyleForPresentationController:(UIPresentationController *)controller {
-    return UIModalPresentationNone;
-}
-
-
-
 
 - (IBAction)viewMaps:(id)sender {
-    
     [self performSegueWithIdentifier:@"mapToBasemaps" sender:self];
 }
 
 #pragma mark - AGSMapViewTouchDelegate Methods
--(void)mapView:(AGSMapView *)mapView didTapAndHoldAtPoint:(CGPoint)screen mapPoint:(AGSPoint *)mappoint graphics:(NSDictionary *)graphics {
+-(void)mapView:(AGSMapView *)mapView didTapAndHoldAtPoint:(CGPoint)screen mapPoint:(AGSPoint *)mappoint features:(NSDictionary *)features {
 
     self.query.geometry = mappoint;
-    self.query.where = @"1=1";
+    self.query.whereClause = @"TAXABLE_STATUS = 'ACTIVE'";
     self.query.outFields = [NSArray arrayWithObjects:@"PIN_NUM", nil];
     self.query.returnGeometry = NO;
-    [SVProgressHUD showWithMaskType: SVProgressHUDMaskTypeBlack];
+    [SVProgressHUD setDefaultMaskType: SVProgressHUDMaskTypeBlack];
+    [SVProgressHUD show];
     [self.queryTask executeWithQuery:self.query];
 }
 
--(void)mapView:(AGSMapView *)mapView didClickAtPoint:(CGPoint)screen mapPoint:(AGSPoint *)mappoint graphics:(NSDictionary *)graphics {
-    if ([[SingletonData getSingleTapName] isEqualToString:@"identify"]) {
+-(void)mapView:(AGSMapView *)mapView didClickAtPoint:(CGPoint)screen mapPoint:(AGSPoint *)mappoint features:(NSDictionary *)features{
         [self identify:mapView mappoint:mappoint];
-    } else if ([[SingletonData getSingleTapName] isEqualToString:@"streetview"]) {
-        [self showStreetView:mappoint];
-    }
 }
-
-- (void) showStreetView : (AGSPoint *) mappoint {
-    NSArray *geoms = [NSArray arrayWithObject:mappoint];
-    [self.geoService projectGeometries:geoms toSpatialReference:[AGSSpatialReference spatialReferenceWithWKID:4326]];
-}
-
-- (void) geometryServiceTask:(AGSGeometryServiceTask *)geometryServiceTask operation:(NSOperation *)op didReturnProjectedGeometries:(NSArray *)projectedGeometries {
-    AGSPoint *point = [projectedGeometries objectAtIndex:0];
-    
-    NSMutableDictionary* params = [NSMutableDictionary dictionary];
-    [params setObject:@"json" forKey:@"output"];
-    [params setObject:[NSString stringWithFormat:@"%f,%f", point.y, point.x] forKey:@"ll"];
-    self.jsonOp = [[AGSJSONRequestOperation alloc]initWithURL:[NSURL URLWithString:@"http://maps.google.com/cbk"] queryParameters:params];
-    self.jsonOp.target = self;
-    self.jsonOp.action = @selector(operation:didGetPano:);
-    self.idTotal += 1;
-    [self.queue addOperation:self.jsonOp];
-}
-
-
-- (void)operation:(NSOperation*)op didGetPano:(NSDictionary *)results {
-    if ([results objectForKey:@"Location"]) {
-        NSDictionary *location = [results objectForKey:@"Location"];
-        float lng = [[location objectForKey:@"lng"] floatValue];
-        float lat = [[location objectForKey:@"lat"] floatValue];
-        NSString *panoId = [location objectForKey:@"panoId"];
-        
-        self.streetViewUrl = [NSURL URLWithString:[NSString stringWithFormat:@"https://maps.google.com/?ll=%f,%f&spn=0.035338,0.066047&t=h&z=15&layer=c&cbll=%f,%f&panoid=%@&cbp=12,0,,0,0", lat, lng, lat, lng, panoId]];
-        [self performSegueWithIdentifier:@"mapToStreetview" sender:self];
-    }
-}
-
-
 - (void) identify : (AGSMapView *) mapView mappoint: (AGSPoint *) mappoint {
     NSArray *opLayers = [SingletonData getLayersJson];
-    NSDictionary *baseLayer = [SingletonData getBaseLayer];
     self.idCount = 0;
     self.idTotal = 0;
     self.idResults = [[NSMutableArray alloc] init];
-
-    if ([baseLayer objectForKey:@"identifiable"]) {
-        if ((BOOL)[[baseLayer objectForKey:@"identifiable"] boolValue]) {
-            NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@", [baseLayer objectForKey:@"url"], @"/Identify"]];
-            NSMutableDictionary* params = [NSMutableDictionary dictionary];
-            NSArray *layers = [baseLayer objectForKey:@"identifyLayers"];
-            if ([layers count] > 0) {
-                NSString *layersStr = [layers componentsJoinedByString:@","];
-                [params setObject:@"json" forKey:@"f"];
-                [params setObject:@"6" forKey:@"tolerance"];
-                [params setObject:[mappoint encodeToJSON] forKey:@"geometry"];
-                //AGSEnvelope *env =[AGSEnvelope envelopeWithXmin:mappoint.x-5 ymin:mappoint.y-5 xmax:mappoint.x+5 ymax:mappoint.y+5 spatialReference:self.mapView.spatialReference];
-                //[params setObject:[env encodeToJSON] forKey:@"geometry"];
-                
-                [params setObject:@"esriGeometryPoint" forKey:@"geometryType"];
-                [params setObject:[mapView.visibleAreaEnvelope encodeToJSON] forKey:@"mapExtent"];
-                [params setObject:[NSString stringWithFormat:@"visible:%@", layersStr] forKey:@"layers"];
-                [params setObject:@"false" forKey:@"returnGeometry"];
-                [params setObject:[NSString stringWithFormat:@"%f,%f,%i", mapView.bounds.size.height, mapView.bounds.size.width, 96] forKey:@"imageDisplay"];
-                
-                self.jsonOp = [[AGSJSONRequestOperation alloc]initWithURL:url queryParameters:params];
-                self.jsonOp.target = self;
-                self.jsonOp.action = @selector(operation:didIdentify:);
-                self.jsonOp.errorAction = @selector(operation:didFailWithError:);
-                self.idTotal += 1;
-                [self.queue addOperation:self.jsonOp];
-            }
-
-        }
-    }
     
     for (int i = 0; i < [opLayers count];i++) {
         NSDictionary *layer = [opLayers objectAtIndex:i];
@@ -590,9 +549,7 @@
             [params setObject:@"json" forKey:@"f"];
             [params setObject:@"10" forKey:@"tolerance"];
             [params setObject:[mappoint encodeToJSON] forKey:@"geometry"];
-            //AGSEnvelope *env =[AGSEnvelope envelopeWithXmin:mappoint.x-5 ymin:mappoint.y-5 xmax:mappoint.x+5 ymax:mappoint.y+5 spatialReference:self.mapView.spatialReference];
-            //[params setObject:[env encodeToJSON] forKey:@"geometry"];
-            
+
             [params setObject:@"esriGeometryPoint" forKey:@"geometryType"];
             [params setObject:[mapView.visibleAreaEnvelope encodeToJSON] forKey:@"mapExtent"];
             [params setObject:@"visible" forKey:@"layers"];
@@ -624,7 +581,7 @@
     
     if ([featureSet.features count] > 0) {
         AGSGraphic *graphic = [featureSet.features objectAtIndex:0];
-        //[self addGraphicToMap:graphic];
+        [self addGraphicToMap:graphic];
         NSString *pin = [graphic attributeAsStringForKey:@"PIN_NUM"];
 
         [self searchByPIN:pin];
@@ -712,10 +669,13 @@
 
 -(void)searchByPIN:(NSString *) pin{
     NSMutableDictionary* params = [NSMutableDictionary dictionary];
-    [params setObject:@"jsonp" forKey:@"f"];
-    [params setObject:@"PIN" forKey:@"type"];
-    [params setObject:[NSArray arrayWithObjects:pin, nil] forKey:@"values"];
-    NSURL* url = [NSURL URLWithString:@"http://maps.raleighnc.gov/arcgis/rest/services/Parcels/MapServer/exts/PropertySOE/RealEstateSearch"];
+    [params setObject:@"json" forKey:@"f"];
+    [params setObject:[[@"PIN_NUM = '" stringByAppendingString:pin] stringByAppendingString:@"'"] forKey:@"where"];
+    [params setObject:@"*" forKey:@"outFields"];
+    [params setObject:@"false" forKey:@"returnGeometry"];
+
+    NSURL* url = [NSURL URLWithString:@"https://maps.raleighnc.gov/arcgis/rest/services/Property/Property/MapServer/1/query"];
+
     self.jsonOp = [[AGSJSONRequestOperation alloc]initWithURL:url queryParameters:params];
     self.jsonOp.target = self;
     self.jsonOp.action = @selector(operation:didSucceedWithAccounts:);
@@ -727,13 +687,11 @@
 
 - (void)operation:(NSOperation*)op didSucceedWithAccounts:(NSDictionary *)results {
     [SVProgressHUD dismiss];
-    if ([results objectForKey:@"Accounts"] != nil) {
+    if ([results objectForKey:@"features"] != nil) {
         
-        id tracker = [[GAI sharedInstance] defaultTracker];
-        [tracker send:[[GAIDictionaryBuilder createEventWithCategory:@"Map Events" action:@"Selected Property" label:nil value:nil] build]];
         
-        self.accounts = [results objectForKey:@"Accounts"];
-        self.fields = [results objectForKey:@"Fields"];
+        self.accounts = [results objectForKey:@"features"];
+        self.fields = [results objectForKey:@"fields"];
         self.account = [self.accounts objectAtIndex:0];
         
         if (self.accounts.count > 1) {
@@ -758,39 +716,48 @@
 - (void)operation:(NSOperation*)op didFailWithError:(NSError *)error {
 	//Error encountered while invoking webservice. Alert user
     [SVProgressHUD dismiss];
-	UIAlertView* av = [[UIAlertView alloc] initWithTitle:@"Sorry"
-												 message:[error localizedDescription]
-												delegate:nil cancelButtonTitle:@"OK"
-									   otherButtonTitles:nil];
-	[av show];
+
+    UIAlertController * alert = [UIAlertController
+                                 alertControllerWithTitle:NSLocalizedString(@"Sorry", nil)
+                                 message:[error localizedDescription]
+                                 preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertAction* okButton = [UIAlertAction
+                               actionWithTitle:NSLocalizedString(@"OK", nil)
+                               style:UIAlertActionStyleDefault
+                               handler:^(UIAlertAction * action) {
+                               }];
+    [alert addAction:okButton];
+    
+    [self presentViewController:alert animated:YES completion:nil];
 }
 
 
 -(void)reportResultsOnIpad{
     //load results view controller in master view//
-    NSArray *controllers = self.splitViewController.viewControllers;
-    UINavigationController *controller = [controllers objectAtIndex:0];
-    UIViewController *currentController = [controller.viewControllers objectAtIndex:0];
-    if (![currentController isKindOfClass:([ResultsViewController class])]) {
+    //NSArray *controllers = self.splitViewController.viewControllers;
+  //  UINavigationController *controller = [controllers objectAtIndex:0];
+  //  UIViewController *currentController = [controller.viewControllers objectAtIndex:0];
+   // if (![currentController isKindOfClass:([ResultsViewController class])]) {
         
-        id tracker = [[GAI sharedInstance] defaultTracker];
-        [tracker send:[[GAIDictionaryBuilder createEventWithCategory:@"Map Events" action:@"Identified" label:nil value:nil] build]];
         
         UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main_iPad" bundle:[NSBundle mainBundle]];
         ResultsViewController *rvc = [storyboard instantiateViewControllerWithIdentifier:@"resultsViewController"];
-        NSMutableArray *vcs = [[NSMutableArray alloc] initWithObjects:rvc, nil];
-        [controller setViewControllers:vcs];
+      // NSMutableArray *vcs = [[NSMutableArray alloc] initWithObjects:rvc, nil];
+       // [controller setViewControllers:vcs];
         //add notifier to results view controller//
         //[[NSNotificationCenter defaultCenter] addObserver:rvc selector:@selector(showResults:) name:@"showResultsNotification" object:nil];
+        
         SEL selector = sel_registerName("showResults:");
         [[NSNotificationCenter defaultCenter] addObserver:rvc selector:selector name:@"showResultsNotification" object:nil];
         
-    }
-    //notify results view controller of results//
-    NSMutableDictionary* dict = [NSMutableDictionary dictionary];
-    [dict setObject:self.fields forKey:@"fields"];
-    [dict setObject:self.accounts forKey:@"accounts"];
-    [[NSNotificationCenter defaultCenter] postNotificationName: @"showResultsNotification" object: self userInfo: dict];
+    //} else {
+        //notify results view controller of results//
+        NSMutableDictionary* dict = [NSMutableDictionary dictionary];
+        [dict setObject:self.fields forKey:@"fields"];
+        [dict setObject:self.accounts forKey:@"accounts"];
+        [[NSNotificationCenter defaultCenter] postNotificationName: @"showResultsNotification" object: self userInfo: dict];
+   // }
+
 }
 
 
@@ -818,7 +785,7 @@
 
 
 
-
+ 
 
 
 -(void)setIsGpsOn:(BOOL)isGpsOn {
@@ -827,14 +794,14 @@
 - (IBAction)gpsButtonTapped:(id)sender {
     self.mapView.locationDisplay.autoPanMode = AGSLocationDisplayAutoPanModeDefault;
     if (self.isGpsOn) {
-        self.gpsButton.title = @"GPS Off";
+        self.gpsButton.title = NSLocalizedString(@"GPS Off", nil);
+        [self.gpsButton setImage: [UIImage imageNamed:@"gps"]];
+
         [self setIsGpsOn:NO];
         [self.mapView.locationDisplay stopDataSource];
     } else {
         [self setIsGpsOn:YES];
         [self startGPS];
-        id tracker = [[GAI sharedInstance] defaultTracker];
-        [tracker send:[[GAIDictionaryBuilder createEventWithCategory:@"Map Events" action:@"GPS Enabled" label:@"Yes" value:nil] build]];
     }
 }
 
@@ -842,6 +809,7 @@
 
 - (IBAction)viewLayers:(id)sender {
     [self performSegueWithIdentifier:@"mapToLayers" sender:self];
+
 }
 
 - (IBAction)infoPressed:(id)sender {

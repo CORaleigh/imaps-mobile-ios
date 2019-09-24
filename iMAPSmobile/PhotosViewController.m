@@ -9,22 +9,39 @@
 #import "PhotosViewController.h"
 #import "PhotoContentViewController.h"
 #import "SVProgressHUD.h"
-#import "GAI.h"
-#import "GAIFields.h"
-#import "GAIDictionaryBuilder.h"
+
 @interface PhotosViewController ()
 
 @end
 
 @implementation PhotosViewController
 @synthesize reid = _reid, jsonOp = _jsonOp, queue = _queue, photos = _photos, pageContent = _pageContent, currentURL = _currentURL, pageViewController = _pageViewController;
-- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
-{
-    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
-    if (self) {
-        // Custom initialization
+
+
+-(void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection {
+    [super traitCollectionDidChange:previousTraitCollection];
+    [self viewWillAppear:YES];
+
+}
+-(void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    if (@available(iOS 13, *)) {
+        if(self.traitCollection.userInterfaceStyle == UIUserInterfaceStyleDark) {
+            if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
+                self.navigationController.navigationBar.barTintColor = [UIColor systemGray5Color];
+                [self.view setBackgroundColor:[UIColor systemGray5Color]];
+                
+            } else {
+                self.navigationController.navigationBar.barTintColor = [UIColor blackColor];
+                [self.view setBackgroundColor:[UIColor blackColor]];
+            }
+
+
+        } else {
+            self.navigationController.navigationBar.barTintColor = [UIColor whiteColor];
+            [self.view setBackgroundColor:[UIColor whiteColor]];
+        }
     }
-    return self;
 }
 
 - (void)viewDidLoad
@@ -34,24 +51,21 @@
     self.navigationController.toolbarHidden = NO;
     self.navigationController.navigationBarHidden = NO;
     self.queue = [[NSOperationQueue alloc] init];
-    NSURL *url = [NSURL URLWithString:@"http://maps.raleighnc.gov/arcgis/rest/services/Parcels/MapServer/exts/PropertySOE/PhotoSearch"];
+    NSURL *url = [NSURL URLWithString:@"https://maps.raleighnc.gov/arcgis/rest/services/Property/Property/MapServer/2/query"];
+
     NSMutableDictionary *params = [NSMutableDictionary dictionary];
-    [params setObject:@"jsonp" forKey:@"f"];
-    [params setObject:self.reid forKey:@"reid"];
+    [params setObject:@"json" forKey:@"f"];
+    [params setObject:@"*" forKey:@"outFields"];
+    [params setObject:@"DATECREATED DESC" forKey:@"orderByFields"];
+
+    [params setObject:[[@"PARCEL = '" stringByAppendingString: self.reid] stringByAppendingString:@"'"] forKey:@"where"];
     self.jsonOp = [[AGSJSONRequestOperation alloc] initWithURL:url queryParameters:params];
     self.jsonOp.target = self;
     self.jsonOp.action = @selector(operation:didSucceedWithPhotos:);
     self.jsonOp.errorAction = @selector(operation:didFailWithError:);
-    [SVProgressHUD showWithMaskType:SVProgressHUDMaskTypeBlack];
+    [SVProgressHUD setDefaultMaskType:SVProgressHUDMaskTypeBlack];
+    [SVProgressHUD show];
     [self.queue addOperation:self.jsonOp];
-}
-
-- (void)viewDidAppear:(BOOL)animated {
-    [super viewDidAppear:animated];
-    
-    id tracker = [[GAI sharedInstance] defaultTracker];
-    [tracker set:kGAIScreenName value:@"Photos Screen"];
-    [tracker send:[[GAIDictionaryBuilder createAppView] build]];
 }
 
 - (void)didReceiveMemoryWarning
@@ -66,10 +80,10 @@
 
     for (int i  = 0; i < [_photos count];i++) {
         NSMutableString *urlString = [NSMutableString stringWithString:@"http://services.wakegov.com/realestate/photos/mvideo/"];
-        NSDictionary *photo = [_photos objectAtIndex:i];
-        [urlString appendString:[photo objectForKey:@"imageDir"]];
+        NSDictionary *photo = [[_photos objectAtIndex:i] objectForKey:@"attributes"];
+        [urlString appendString:[photo objectForKey:@"IMAGEDIR"]];
         [urlString appendString:@"/"];
-        [urlString appendString:[photo objectForKey:@"imageName"]];
+        [urlString appendString:[photo objectForKey:@"IMAGENAME"]];
     
         NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:urlString]];
         [requests addObject:request];
@@ -84,8 +98,6 @@
     }
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main_iPhone" bundle:[NSBundle mainBundle]];
     PhotoContentViewController *dataViewController = [storyboard instantiateViewControllerWithIdentifier:@"photoView"];
-
-    
     
     dataViewController.request = _pageContent[index];
     _currentURL = dataViewController.request.URL;
@@ -152,7 +164,7 @@
 
 - (void)operation:(NSOperation*)op didSucceedWithPhotos:(NSDictionary *)results {
     [SVProgressHUD dismiss];
-    _photos = [results objectForKey:@"Photos"];
+    _photos = [results objectForKey:@"features"];
     if(_photos.count > 0) {
         [self createContentPages];
         NSDictionary *options = [NSDictionary dictionaryWithObject:[NSNumber numberWithInt:UIPageViewControllerSpineLocationMin] forKey:UIPageViewControllerOptionSpineLocationKey];
@@ -171,28 +183,42 @@
         [_pageViewController didMoveToParentViewController:self];
         [self setPageTitle:0];
     } else {
-        UIAlertView* av = [[UIAlertView alloc] initWithTitle:@"No Photo"
-                                                     message:@"No photos are available for this property"
-                                                    delegate:self cancelButtonTitle:@"OK"
-                                           otherButtonTitles:nil];
-        [av show];
+
+        UIAlertController * alert = [UIAlertController
+                                     alertControllerWithTitle:NSLocalizedString(@"No Photo", nil)
+                                     message:NSLocalizedString(@"No photos are available for this property", nil)
+                                     preferredStyle:UIAlertControllerStyleAlert];
+        UIAlertAction* okButton = [UIAlertAction
+                                   actionWithTitle:NSLocalizedString(@"OK", nil)
+                                   style:UIAlertActionStyleDefault
+                                   handler:^(UIAlertAction * action) {
+                                       [self.navigationController popViewControllerAnimated:YES];
+                                   }];
+        [alert addAction:okButton];
+        
+        [self presentViewController:alert animated:YES completion:nil];
     }
 
 }
 
--(void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
-    [self.navigationController popViewControllerAnimated:YES];
 
-}
 
 - (void)operation:(NSOperation*)op didFailWithError:(NSError *)error {
     [SVProgressHUD dismiss];
-	//Error encountered while invoking webservice. Alert user
-	UIAlertView* av = [[UIAlertView alloc] initWithTitle:@"Sorry"
-												 message:[error localizedDescription]
-												delegate:self cancelButtonTitle:@"OK"
-									   otherButtonTitles:nil];
-	[av show];
+
+    UIAlertController * alert = [UIAlertController
+                                 alertControllerWithTitle:NSLocalizedString(@"Sorry", nil)
+                                 message:[error localizedDescription]
+                                 preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertAction* okButton = [UIAlertAction
+                               actionWithTitle:NSLocalizedString(@"OK", nil)
+                               style:UIAlertActionStyleDefault
+                               handler:^(UIAlertAction * action) {
+                                   [self.navigationController popViewControllerAnimated:YES];
+                               }];
+    [alert addAction:okButton];
+    
+    [self presentViewController:alert animated:YES completion:nil];
 }
 
 
@@ -209,8 +235,6 @@
         UIImage *image = [UIImage imageWithData:[NSData dataWithContentsOfURL:_currentURL]];
         UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil);
 
-        id tracker = [[GAI sharedInstance] defaultTracker];
-        [tracker send:[[GAIDictionaryBuilder createEventWithCategory:@"Info Events" action:@"Saved Photo" label:nil value:nil] build]];
     }
 }
 

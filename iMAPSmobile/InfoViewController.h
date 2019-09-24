@@ -9,12 +9,18 @@
 #import <UIKit/UIKit.h>
 #import <ArcGIS/ArcGIS.h>
 
-@interface InfoViewController : UITableViewController<AGSFindTaskDelegate, UIActionSheetDelegate>
+@interface InfoViewController : UITableViewController<AGSQueryTaskDelegate, UISplitViewControllerDelegate>//<AGSFindTaskDelegate, UIActionSheetDelegate>
 @property (strong, nonatomic) NSDictionary *info;
-@property (strong, nonatomic) AGSFindTask *findTask;
-@property (strong, nonatomic) AGSFindParameters *findParams;
+//@property (strong, nonatomic) AGSFindTask *findTask;
+@property (strong, nonatomic) AGSQueryTask *queryTask;
+
+//@property (strong, nonatomic) AGSFindParameters *findParams;
+@property (strong, nonatomic) AGSQuery *query;
+
 @property (strong, nonatomic) AGSGraphic *graphic;
 @property (strong, nonatomic) AGSJSONRequestOperation *jsonOp;
 @property (strong, nonatomic) NSOperationQueue *queue;
 @property (strong, nonatomic) NSArray *permits;
+@property (strong, nonatomic) NSMutableArray *fields;
+
 @end

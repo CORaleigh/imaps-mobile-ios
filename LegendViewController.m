@@ -8,9 +8,6 @@
 
 #import "LegendViewController.h"
 #import "LegendCell.h"
-#import "GAI.h"
-#import "GAIFields.h"
-#import "GAIDictionaryBuilder.h"
 
 
 @interface LegendViewController ()
@@ -41,14 +38,31 @@
 
 }
 
-- (void)viewDidAppear:(BOOL)animated {
-    [super viewDidAppear:animated];
-    
-    id tracker = [[GAI sharedInstance] defaultTracker];
-    [tracker set:kGAIScreenName value:@"Legend Screen"];
-    [tracker send:[[GAIDictionaryBuilder createAppView] build]];
-}
+-(void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection {
+    [super traitCollectionDidChange:previousTraitCollection];
+    [self viewWillAppear:YES];
 
+}
+-(void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    if (@available(iOS 13, *)) {
+        if(self.traitCollection.userInterfaceStyle == UIUserInterfaceStyleDark) {
+            if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
+                self.navigationController.navigationBar.barTintColor = [UIColor systemGray5Color];
+                [self.view setBackgroundColor:[UIColor systemGray5Color]];
+                
+            } else {
+                self.navigationController.navigationBar.barTintColor = [UIColor blackColor];
+                [self.view setBackgroundColor:[UIColor blackColor]];
+            }
+
+
+        } else {
+            self.navigationController.navigationBar.barTintColor = [UIColor whiteColor];
+            [self.view setBackgroundColor:[UIColor whiteColor]];
+        }
+    }
+}
 - (void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];

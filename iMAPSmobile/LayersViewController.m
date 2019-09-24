@@ -13,9 +13,6 @@
 #import "LayerSwitch.h"
 #import "LayerSlider.h"
 #import "MapViewController.h"
-#import "GAI.h"
-#import "GAIFields.h"
-#import "GAIDictionaryBuilder.h"
 #import "Reachability.h"
 
 @interface LayersViewController ()
@@ -23,7 +20,6 @@
 @end
 
 @implementation LayersViewController {
-    __weak UIPopoverController *popover;
 }
 @synthesize jsonOp = _jsonOp;
 @synthesize queue = _queue;
@@ -66,24 +62,51 @@
 
 -(void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
+
     self.navigationController.toolbar.userInteractionEnabled = YES;
     self.navigationController.navigationBar.userInteractionEnabled = YES;
     
-    id tracker = [[GAI sharedInstance] defaultTracker];
-    [tracker set:kGAIScreenName value:@"Layers Screen"];
-    [tracker send:[[GAIDictionaryBuilder createAppView] build]];
 }
+-(void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection {
+    [super traitCollectionDidChange:previousTraitCollection];
+    [self viewWillAppear:YES];
 
-- (void) alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex {
-    [self testNetworkConnection];
 }
+-(void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    if (@available(iOS 13, *)) {
+        if(self.traitCollection.userInterfaceStyle == UIUserInterfaceStyleDark) {
+            if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
+                self.navigationController.navigationBar.barTintColor = [UIColor systemGray5Color];
+                [self.view setBackgroundColor:[UIColor systemGray5Color]];
+                
+            } else {
+                self.navigationController.navigationBar.barTintColor = [UIColor blackColor];
+                [self.view setBackgroundColor:[UIColor blackColor]];
+            }
 
+
+        } else {
+            self.navigationController.navigationBar.barTintColor = [UIColor whiteColor];
+            [self.view setBackgroundColor:[UIColor whiteColor]];
+        }
+    }
+}
 - (void) handleNetworkUnavailable {
-    UIAlertView* av = [[UIAlertView alloc] initWithTitle:@"Connection Issue"
-												 message:@"Internet Connection Not Detected"
-												delegate:self cancelButtonTitle:@"Retry"
-									   otherButtonTitles:nil];
-	[av show];
+
+    UIAlertController * alert = [UIAlertController
+                                 alertControllerWithTitle:NSLocalizedString(@"Connection Issue", nil)
+                                 message:NSLocalizedString(@"Internet Connection Not Detected", nil)
+                                 preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertAction* okButton = [UIAlertAction
+                               actionWithTitle:NSLocalizedString(@"Retry", nil)
+                               style:UIAlertActionStyleDefault
+                               handler:^(UIAlertAction * action) {
+                                   [self testNetworkConnection];
+                               }];
+    [alert addAction:okButton];
+    
+    [self presentViewController:alert animated:YES completion:nil];
 }
 
 - (void) testNetworkConnection {
@@ -97,7 +120,7 @@
 }
 
 - (void) getConfig {
-    NSURL* url = [NSURL URLWithString:@"http://maps.raleighnc.gov/iMAPS_iOS/config.txt"];
+    NSURL* url = [NSURL URLWithString:@"https://maps.raleighnc.gov/iMAPS_iOS/config.txt"];
     self.jsonOp = [[AGSJSONRequestOperation alloc] initWithURL:url];
     self.jsonOp.requestCachePolicy = NSURLRequestReloadIgnoringCacheData;
     self.jsonOp.target = self;
@@ -174,26 +197,26 @@
     NSMutableDictionary *layer = [_opLayers objectAtIndex:indexPath.row];
     AGSLayer *mapLayer = [_mapView mapLayerForName:[layer objectForKey:@"name"]];
     _selectedLayer = mapLayer;
-    [self performSegueWithIdentifier:@"layersToDetails" sender:self];
+    [self performSegueWithIdentifier:@"layersToDetails" sender:self.navigationController];
 }
 
 -(void)switchChanged:(LayerSwitch*)sender{
     NSArray *filtered = [_opLayers filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"(name LIKE[cd]%@)",sender.layerName]];
     //NSMutableDictionary *layer = [_opLayers objectAtIndex:sender.tag];
-    
+
     NSMutableDictionary *layer = [filtered objectAtIndex:0];
     [layer setObject:([sender isOn])?@"1":@"0" forKey:@"visible"];
     [SingletonData setLayersJson:_opLayers];
-    
+    if (!_mapView) {
+        _mapView = [SingletonData getMapView];
+    }
     NSIndexPath *indexPath = [NSIndexPath indexPathForRow:sender.tag inSection:0];
     UITableViewCell *cell = [_layerTableView cellForRowAtIndexPath:indexPath];
     if ([sender isOn]) {
 
         //[_mapView insertMapLayer:dynLayer withName:[layer objectForKey:@"name"] atIndex:sender.tag + 2];
         
-        id tracker = [[GAI sharedInstance] defaultTracker];
-        [tracker send:[[GAIDictionaryBuilder createEventWithCategory:@"Layers" action:@"Set Visible" label:sender.layerName value:nil] build]];
-        
+  
         
         NSArray *filteredLayers = [_mapView.mapLayers filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"(name LIKE[cd]%@)", sender.layerName]];
         if ([filteredLayers count] == 0) {
@@ -244,45 +267,6 @@
     
 }
 
-
-/*
-// Override to support conditional editing of the table view.
-- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    // Return NO if you do not want the specified item to be editable.
-    return YES;
-}
-*/
-
-/*
-// Override to support editing the table view.
-- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    if (editingStyle == UITableViewCellEditingStyleDelete) {
-        // Delete the row from the data source
-        [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
-    }   
-    else if (editingStyle == UITableViewCellEditingStyleInsert) {
-        // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-    }   
-}
-*/
-
-/*
-// Override to support rearranging the table view.
-- (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)fromIndexPath toIndexPath:(NSIndexPath *)toIndexPath
-{
-}
-*/
-
-/*
-// Override to support conditional rearranging of the table view.
-- (BOOL)tableView:(UITableView *)tableView canMoveRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    // Return NO if you do not want the item to be re-orderable.
-    return YES;
-}
-*/
 
 #pragma mark - Navigation
 

@@ -9,9 +9,6 @@
 #import "LayerDetailsViewController.h"
 #import "LayerDetailCell.h"
 #import "SVProgressHUD.h"
-#import "GAI.h"
-#import "GAIFields.h"
-#import "GAIDictionaryBuilder.h"
 
 
 @interface LayerDetailsViewController ()
@@ -49,9 +46,6 @@
     self.navigationController.toolbarHidden = NO;
     self.navigationController.navigationBar.userInteractionEnabled = YES;
     
-    id tracker = [[GAI sharedInstance] defaultTracker];
-    [tracker set:kGAIScreenName value:@"Layer Details Screen"];
-    [tracker send:[[GAIDictionaryBuilder createAppView] build]];
 }
 
 - (void)didReceiveMemoryWarning
@@ -150,7 +144,8 @@
 }
 
 - (IBAction)showLegend:(id)sender {
-    [SVProgressHUD showWithMaskType:SVProgressHUDMaskTypeBlack];
+    [SVProgressHUD setDefaultMaskType:SVProgressHUDMaskTypeBlack];
+    [SVProgressHUD show];
     [_mapServiceInfo retrieveLegendInfo];
 }
 
@@ -165,6 +160,32 @@
 -(void)mapServiceInfo:(AGSMapServiceInfo *)mapServiceInfo operation:(NSOperation *)op didFailToRetrieveLegendInfoWithError:(NSError *)error
 {
     [SVProgressHUD dismiss];
+}
+
+-(void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection {
+    [super traitCollectionDidChange:previousTraitCollection];
+    [self viewWillAppear:YES];
+
+}
+-(void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    if (@available(iOS 13, *)) {
+        if(self.traitCollection.userInterfaceStyle == UIUserInterfaceStyleDark) {
+            if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
+                self.navigationController.navigationBar.barTintColor = [UIColor systemGray5Color];
+                [self.view setBackgroundColor:[UIColor systemGray5Color]];
+                
+            } else {
+                self.navigationController.navigationBar.barTintColor = [UIColor blackColor];
+                [self.view setBackgroundColor:[UIColor blackColor]];
+            }
+
+
+        } else {
+            self.navigationController.navigationBar.barTintColor = [UIColor whiteColor];
+            [self.view setBackgroundColor:[UIColor whiteColor]];
+        }
+    }
 }
 
 @end

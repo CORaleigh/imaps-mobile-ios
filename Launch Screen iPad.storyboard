@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14868" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" launchScreen="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="Ldn-3Q-8dh">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14824"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--iMapsMobile Mobile-->
+        <scene sceneID="ggG-FP-xYM">
+            <objects>
+                <viewController title="iMapsMobile Mobile" id="3cx-nd-vd9" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" id="7TL-u3-mcu">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="725"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="bxB-YJ-fAY">
+                                <rect key="frame" x="0.0" y="0.0" width="414" height="725"/>
+                                <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </view>
+                        </subviews>
+                        <color key="backgroundColor" red="0.33333334329999997" green="0.33333334329999997" blue="0.33333334329999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <constraints>
+                            <constraint firstItem="44Y-2i-7kR" firstAttribute="trailing" secondItem="bxB-YJ-fAY" secondAttribute="trailing" id="KEk-6d-nMT"/>
+                            <constraint firstItem="44Y-2i-7kR" firstAttribute="bottom" secondItem="bxB-YJ-fAY" secondAttribute="bottom" id="Kpt-yg-tos"/>
+                            <constraint firstItem="bxB-YJ-fAY" firstAttribute="leading" secondItem="44Y-2i-7kR" secondAttribute="leading" id="q5i-s2-gYh"/>
+                            <constraint firstItem="bxB-YJ-fAY" firstAttribute="top" secondItem="44Y-2i-7kR" secondAttribute="top" id="wDI-Lv-4FX"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="44Y-2i-7kR"/>
+                    </view>
+                    <toolbarItems>
+                        <barButtonItem title="Maps" image="basemap" id="y24-hh-T6z"/>
+                        <barButtonItem width="42" style="plain" systemItem="fixedSpace" id="gpu-d7-Kz0"/>
+                        <barButtonItem title="Layers" image="layers" id="x5G-3j-ub4"/>
+                        <barButtonItem width="47" style="plain" systemItem="fixedSpace" id="NLX-za-d64"/>
+                        <barButtonItem title="GPS Off" image="gps" id="Gah-eh-CtG"/>
+                    </toolbarItems>
+                    <navigationItem key="navigationItem" title="iMAPS" id="Egw-et-ifo"/>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="3G1-gt-YXm" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="2723.1884057971015" y="324.10714285714283"/>
+        </scene>
+        <!--Navigation Controller-->
+        <scene sceneID="cJJ-iM-BQa">
+            <objects>
+                <navigationController automaticallyAdjustsScrollViewInsets="NO" toolbarHidden="NO" id="Ldn-3Q-8dh" sceneMemberID="viewController">
+                    <toolbarItems/>
+                    <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" translucent="NO" prompted="NO"/>
+                    <simulatedToolbarMetrics key="simulatedBottomBarMetrics" translucent="NO"/>
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translucent="NO" id="SaU-pK-d5d">
+                        <rect key="frame" x="0.0" y="44" width="414" height="44"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                    <nil name="viewControllers"/>
+                    <toolbar key="toolbar" opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translucent="NO" id="AM5-HK-tbd">
+                        <rect key="frame" x="0.0" y="813" width="414" height="49"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </toolbar>
+                    <connections>
+                        <segue destination="3cx-nd-vd9" kind="relationship" relationship="rootViewController" id="0PE-5y-pop"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="xbm-TH-HeT" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1813.0434782608697" y="324.10714285714283"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="basemap" width="24" height="24"/>
+        <image name="gps" width="24" height="24"/>
+        <image name="layers" width="24" height="24"/>
+    </resources>
+</document>

@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VariablesViewState
+   version = "1.0">
+   <ContextStates>
+      <ContextState
+         contextName = "-[DeedsViewController tableView:cellForRowAtIndexPath:]:DeedsViewController.m">
+         <PersistentStrings>
+            <PersistentString
+               value = "[[deeds objectAtIndex:indexPath.row] objectForKey:@&quot;attributes&quot;] objectForKey:@&quot;DEED_DOC_NUM&quot;">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "-[AddressesViewController viewDidLoad]:AddressesViewController.m">
+      </ContextState>
+      <ContextState
+         contextName = "-[SearchController tableView:didSelectRowAtIndexPath:]:SearchController.m">
+         <PersistentStrings>
+            <PersistentString
+               value = "[address stringByReplacingOccurrencesOfString:@&quot; W &quot; withString:@&quot; &quot; options:NSLiteralSearch&#10;                                                                        range:NSMakeRange(0, address.length)]">
+            </PersistentString>
+            <PersistentString
+               value = "firstSpace">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "-[ServicesWebViewController webView:decidePolicyForNavigationAction:decisionHandler:]:ServicesWebViewController.m">
+         <PersistentStrings>
+            <PersistentString
+               value = "navigationAction.request.URL">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "-[LayersViewController tableView:accessoryButtonTappedForRowWithIndexPath:]:LayersViewController.m">
+         <PersistentStrings>
+            <PersistentString
+               value = "self.navigationController">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "-[MapViewController traitCollectionDidChange:]:MapViewController.m">
+      </ContextState>
+      <ContextState
+         contextName = "-[InfoViewController showActionSheet:]:InfoViewController.m">
+      </ContextState>
+      <ContextState
+         contextName = "-[InfoViewController tableView:cellForRowAtIndexPath:]:InfoViewController.m">
+         <PersistentStrings>
+            <PersistentString
+               value = "fieldName">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "-[InfoViewController viewDidLoad]:InfoViewController.m">
+      </ContextState>
+      <ContextState
+         contextName = "-[AppDelegate operation:didSucceedWithResponse:]:AppDelegate.m">
+         <PersistentStrings>
+            <PersistentString
+               value = "[[results objectForKey:@&quot;enabled&quot;] boolValue] ">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "-[SearchController operation:didSucceedWithAccounts:]:SearchController.m">
+      </ContextState>
+      <ContextState
+         contextName = "-[PhotoContentViewController viewDidLoad]:PhotoContentViewController.m">
+         <PersistentStrings>
+            <PersistentString
+               value = "_view">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "-[LayersViewController switchChanged:]:LayersViewController.m">
+      </ContextState>
+      <ContextState
+         contextName = "-[DeedsViewController operation:didSucceedWithDeeds:]:DeedsViewController.m">
+         <PersistentStrings>
+            <PersistentString
+               value = "[deed objectForKey:@&quot;attributes&quot;] ">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "-[InfoViewController findProperty:]:InfoViewController.m">
+      </ContextState>
+   </ContextStates>
+</VariablesViewState>

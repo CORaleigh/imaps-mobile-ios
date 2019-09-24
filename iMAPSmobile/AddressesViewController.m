@@ -9,9 +9,6 @@
 #import "AddressesViewController.h"
 #import "SVProgressHUD.h"
 
-#import "GAI.h"
-#import "GAIFields.h"
-#import "GAIDictionaryBuilder.h"
 
 @interface AddressesViewController ()
 
@@ -28,6 +25,8 @@
     return self;
 }
 
+
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];
@@ -35,26 +34,43 @@
     self.navigationController.toolbarHidden = YES;
     self.navigationController.navigationBarHidden = NO;
     self.queue = [[NSOperationQueue alloc] init];
-    NSURL *url = [NSURL URLWithString:@"http://maps.raleighnc.gov/arcgis/rest/services/Parcels/MapServer/exts/PropertySOE/AddressSearch"];
-    
-    [_params setObject:@"jsonp" forKey:@"f"];
+    NSURL *url = [NSURL URLWithString:@"https://maps.raleighnc.gov/arcgis/rest/services/Property/Property/MapServer/4/query"];
+    [_params setObject:@"json" forKey:@"f"];
+    [_params setObject:[[@"PIN_NUM = '" stringByAppendingString:[self.params objectForKey:@"pin"]] stringByAppendingString:@"' AND ADDR_LIST = 'Yes'"] forKey:@"where"];
+    [_params setObject:@"*" forKey:@"outFields"];
+    [_params setObject:@"ADDRESS" forKey:@"orderByFields"];
     self.jsonOp = [[AGSJSONRequestOperation alloc] initWithURL:url queryParameters:_params];
     self.jsonOp.target = self;
     self.jsonOp.action = @selector(operation:didSucceedWithAddresses:);
     self.jsonOp.errorAction = @selector(operation:didFailWithError:);
-    [SVProgressHUD showWithMaskType:SVProgressHUDMaskTypeBlack];
+    [SVProgressHUD setDefaultMaskType:SVProgressHUDMaskTypeBlack];
+    [SVProgressHUD show];
     [self.queue addOperation:self.jsonOp];
 }
 
-- (void)viewDidAppear:(BOOL)animated {
-    [super viewDidAppear:animated];
-    
-    id tracker = [[GAI sharedInstance] defaultTracker];
-    [tracker set:kGAIScreenName value:@"Address Screen"];
-    [tracker send:[[GAIDictionaryBuilder createAppView] build]];
-    
-}
 
+-(void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    if (@available(iOS 13, *)) {
+        if(self.traitCollection.userInterfaceStyle == UIUserInterfaceStyleDark) {
+            self.navigationController.navigationBar.barTintColor = [UIColor blackColor];
+
+        } else {
+            self.navigationController.navigationBar.barTintColor = [UIColor whiteColor];
+        }
+    }
+}
+-(void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection {
+    [super traitCollectionDidChange:previousTraitCollection];
+    if (@available(iOS 13, *)) {
+        if(self.traitCollection.userInterfaceStyle == UIUserInterfaceStyleDark) {
+            self.navigationController.navigationBar.barTintColor = [UIColor blackColor];
+
+        } else {
+            self.navigationController.navigationBar.barTintColor = [UIColor whiteColor];
+        }
+    }
+}
 - (void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
@@ -79,56 +95,21 @@
 {
     static NSString *CellIdentifier = @"addressCell";
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier forIndexPath:indexPath];
-    
-    // Configure the cell...
-    
-    NSDictionary *address = [_addresses objectAtIndex:indexPath.row];
-    if ([address objectForKey:@"rpidMap"]) {
-        //raleigh
-        cell.textLabel.numberOfLines = 4;
-        cell.textLabel.lineBreakMode = NSLineBreakByWordWrapping;
-        NSString *suite = [address objectForKey:@"suite"];
-        suite = [suite stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-        NSString *addr = [[address objectForKey:@"address"] capitalizedString];
-        NSString *status = [[address objectForKey:@"status"] capitalizedString];
-        NSString *type = [[address objectForKey:@"type"] capitalizedString];
-        if ([suite length] > 0) {
-            cell.textLabel.text = [NSString stringWithFormat:@"%@ Suite %@\n", addr, suite];
-        } else {
-            cell.textLabel.text = [NSString stringWithFormat:@"%@\n", addr];
-        }
-        
-    
-        
-        cell.textLabel.text = [cell.textLabel.text stringByAppendingFormat:@"%@\nStatus: ", status];
-        cell.textLabel.text = [cell.textLabel.text stringByAppendingFormat:@"%@\nType: ", type];
-        
-    } else {
-        //wake
-        cell.textLabel.text = [NSString stringWithFormat:@"%@", [[address objectForKey:@"address"] capitalizedString]];
-    }
+        NSDictionary *address = [_addresses objectAtIndex:indexPath.row];
+    cell.textLabel.text = [NSString stringWithFormat:@"%@", [[[address objectForKey:@"attributes"] objectForKey:@"ADDRESS"] capitalizedString]];
     
     return cell;
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
-    NSDictionary *address = [_addresses objectAtIndex:indexPath.row];
-    if ([address objectForKey:@"rpidMap"]) {
-        return 80;
-    } else {
-        return 40;
-    }
+    return 40;
 }
 
 
 
 - (void)operation:(NSOperation*)op didSucceedWithAddresses:(NSDictionary *)results {
     [SVProgressHUD dismiss];
-    _addresses = [results objectForKey:@"Addresses"];
-    NSDictionary *address1 = [_addresses objectAtIndex:0];
-    if ([address1 objectForKey:@"rpidMap"]) {
-        [self.navigationItem setTitle:[NSString stringWithFormat:@"%@, %@", [address1 objectForKey:@"rpidMap"], [address1 objectForKey:@"rpidLot"]]];
-    }
+    _addresses = [results objectForKey:@"features"];
     [self.tableView reloadData];
 }
 
@@ -136,11 +117,19 @@
 - (void)operation:(NSOperation*)op didFailWithError:(NSError *)error {
     [SVProgressHUD dismiss];
 	//Error encountered while invoking webservice. Alert user
-	UIAlertView* av = [[UIAlertView alloc] initWithTitle:@"Sorry"
-												 message:[error localizedDescription]
-												delegate:nil cancelButtonTitle:@"OK"
-									   otherButtonTitles:nil];
-	[av show];
+    UIAlertController * alert = [UIAlertController
+                                 alertControllerWithTitle:NSLocalizedString(@"Sorry", nil)
+                                 message:[error localizedDescription]
+                                 preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertAction* okButton = [UIAlertAction
+                               actionWithTitle:NSLocalizedString(@"OK", nil)
+                               style:UIAlertActionStyleDefault
+                               handler:^(UIAlertAction * action) {
+                                   [self.navigationController popViewControllerAnimated:YES];
+                               }];
+    [alert addAction:okButton];
+    
+    [self presentViewController:alert animated:YES completion:nil];
 }
 
 

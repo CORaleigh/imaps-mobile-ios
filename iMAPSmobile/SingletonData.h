@@ -21,7 +21,6 @@
 @property (nonatomic, retain) NSString *currentBaseType;
 @property NSUInteger aerialIndex;
 @property NSUInteger baseIndex;
-@property (nonatomic, retain) UIPopoverController *popover;
 @property NSString *singleTapName;
 
 +(SingletonData *) sharedInstance;
@@ -50,8 +49,6 @@
 +(NSUInteger) getBaseIndex;
 +(void) setBaseIndex:(NSUInteger)baseIndex;
 
-+(UIPopoverController *) getPopover;
-+(void) setPopover:(UIPopoverController *)popover;
 
 +(NSString *) getSingleTapName;
 +(void) setSingleTapName:(NSString *) singleTapName;

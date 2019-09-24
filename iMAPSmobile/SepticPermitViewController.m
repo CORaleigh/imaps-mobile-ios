@@ -7,10 +7,8 @@
 //
 
 #import "SepticPermitViewController.h"
-#import "PDFViewController.h"
-#import "GAI.h"
-#import "GAIFields.h"
-#import "GAIDictionaryBuilder.h"
+#import "PDFCustomViewController.h"
+
 @interface SepticPermitViewController ()
 
 @end
@@ -20,7 +18,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.title = @"Septic Permits";
+    self.title = NSLocalizedString(@"Septic Permits", nil);
     self.navigationController.navigationBarHidden = NO;
     self.navigationController.toolbarHidden = YES;
     // Uncomment the following line to preserve selection between presentations.
@@ -34,7 +32,28 @@
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
 }
+-(void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    if (@available(iOS 13, *)) {
+        if(self.traitCollection.userInterfaceStyle == UIUserInterfaceStyleDark) {
+            self.navigationController.navigationBar.barTintColor = [UIColor blackColor];
 
+        } else {
+            self.navigationController.navigationBar.barTintColor = [UIColor whiteColor];
+        }
+    }
+}
+-(void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection {
+    [super traitCollectionDidChange:previousTraitCollection];
+    if (@available(iOS 13, *)) {
+        if(self.traitCollection.userInterfaceStyle == UIUserInterfaceStyleDark) {
+            self.navigationController.navigationBar.barTintColor = [UIColor blackColor];
+
+        } else {
+            self.navigationController.navigationBar.barTintColor = [UIColor whiteColor];
+        }
+    }
+}
 #pragma mark - Table view data source
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
@@ -52,7 +71,7 @@
     NSString *label = @"";
 
 
-    label = [[self.permits objectAtIndex:indexPath.row] objectForKey:@"permitNumber"];
+    label = [[[self.permits objectAtIndex:indexPath.row] objectForKey:@"attributes"] objectForKey:@"PERMIT_NUMBER"];
 
 
     
@@ -64,14 +83,13 @@
 
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     
-    NSDictionary *permit = [self.permits objectAtIndex:indexPath.row];
-    NSString *permitNum = [permit objectForKey:@"permitNumber"];
-    id tracker = [[GAI sharedInstance] defaultTracker];
-    NSMutableString *baseUrl = [NSMutableString stringWithString:@"http://gisasp2.wakegov.com/imaps/RequestedPermit.aspx?permit="];
+   // NSDictionary *permit = [self.permits objectAtIndex:indexPath.row];
+    NSString *permitNum = [[[self.permits objectAtIndex:indexPath.row] objectForKey:@"attributes"] objectForKey:@"CURRENT_PIN"];
+    NSMutableString *baseUrl = [NSMutableString stringWithString:@"https://maps.wakegov.com/septic/index.html#/?pin="];
     
     [baseUrl appendString:permitNum];
     _septicUrl = [NSURL URLWithString:baseUrl];
-    [tracker send:[[GAIDictionaryBuilder createEventWithCategory:@"Info Events" action:@"Viewed Document" label:@"Septic Permit" value:nil] build]];
+
     [self performSegueWithIdentifier:@"septicToPdf" sender:self];
 }
 
@@ -117,7 +135,7 @@
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
         UINavigationController *nav = (UINavigationController*)segue.destinationViewController;
-        PDFViewController *vc = [nav.childViewControllers objectAtIndex:0];
+        PDFCustomViewController *vc = [nav.childViewControllers objectAtIndex:0];
         [vc performSelector:@selector(setUrl:) withObject:_septicUrl];
     } else {
         [segue.destinationViewController performSelector:@selector(setUrl:) withObject:_septicUrl];

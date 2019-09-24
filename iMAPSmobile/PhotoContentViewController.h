@@ -6,10 +6,9 @@
 //  Copyright (c) 2013 City of Raleigh. All rights reserved.
 //
 
-#import <UIKit/UIKit.h>
-
-@interface PhotoContentViewController : UIViewController<UIWebViewDelegate, UIPageViewControllerDelegate>
-@property (weak, nonatomic) IBOutlet UIWebView *webView;
+#import <WebKit/WebKit.h>
+@interface PhotoContentViewController : UIViewController<UIPageViewControllerDelegate>
+@property (strong, nonatomic) IBOutlet WKWebView *webView;
 @property (strong, nonatomic) NSURLRequest *request;
 
 @end

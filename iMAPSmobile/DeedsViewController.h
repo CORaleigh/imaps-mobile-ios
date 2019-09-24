@@ -7,6 +7,8 @@
 //
 
 #import <UIKit/UIKit.h>
+#import <PDFKit/PDFKit.h>
+
 #import <ArcGIS/ArcGIS.h>
 @interface DeedsViewController : UITableViewController <UIAlertViewDelegate>
 @property (strong, nonatomic) NSString *reid;

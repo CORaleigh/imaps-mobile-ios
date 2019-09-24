@@ -7,9 +7,6 @@
 //
 
 #import "ResultsViewController.h"
-#import "GAI.h"
-#import "GAIFields.h"
-#import "GAIDictionaryBuilder.h"
 
 @interface ResultsViewController ()
 
@@ -41,6 +38,14 @@
 
 -(void)viewWillAppear:(BOOL)animated{
     [super viewWillAppear:animated];
+    if (@available(iOS 13, *)) {
+        if(self.traitCollection.userInterfaceStyle == UIUserInterfaceStyleDark) {
+            self.navigationController.navigationBar.barTintColor = [UIColor blackColor];
+
+        } else {
+            self.navigationController.navigationBar.barTintColor = [UIColor whiteColor];
+        }
+    }
     self.navigationController.navigationBarHidden = NO;
     self.navigationController.toolbarHidden = YES;
 }
@@ -50,11 +55,19 @@
     self.navigationController.toolbar.userInteractionEnabled = YES;
     self.navigationController.navigationBar.userInteractionEnabled = YES;
     
-    id tracker = [[GAI sharedInstance] defaultTracker];
-    [tracker set:kGAIScreenName value:@"Results Screen"];
-    [tracker send:[[GAIDictionaryBuilder createAppView] build]];
 }
 
+-(void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection {
+    [super traitCollectionDidChange:previousTraitCollection];
+    if (@available(iOS 13, *)) {
+        if(self.traitCollection.userInterfaceStyle == UIUserInterfaceStyleDark) {
+            self.navigationController.navigationBar.barTintColor = [UIColor blackColor];
+
+        } else {
+            self.navigationController.navigationBar.barTintColor = [UIColor whiteColor];
+        }
+    }
+}
 - (void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
@@ -65,6 +78,10 @@
 -(void)showResults:(NSNotification*)notification {
     self.info = notification.userInfo;
     [self.tableView reloadData];
+    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
+        [[UIApplication sharedApplication] sendAction:self.splitViewController.displayModeButtonItem.action to:self.splitViewController.displayModeButtonItem.target from:nil forEvent:nil ];
+    }
+        
 }
 
 #pragma mark - Table view data source
@@ -86,13 +103,14 @@
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier forIndexPath:indexPath];
     NSMutableArray *accounts = [_info objectForKey:@"accounts"];
     NSDictionary *account = [accounts objectAtIndex:indexPath.row];
+    NSDictionary *attributes = [account objectForKey:@"attributes"];
 
     UILabel *addressLabel = (UILabel *)[cell viewWithTag:100];
-    addressLabel.text = [account objectForKey:@"siteAddress"];
+    addressLabel.text = [attributes objectForKey:@"SITE_ADDRESS"];
     UILabel *ownerLabel = (UILabel *)[cell viewWithTag:101];
-    ownerLabel.text = [account objectForKey:@"owner"];
+    ownerLabel.text = [attributes objectForKey:@"OWNER"];
     UILabel *pinLabel = (UILabel *)[cell viewWithTag:102];
-    pinLabel.text = [account objectForKey:@"pin"];
+    pinLabel.text = [attributes objectForKey:@"PIN_NUM"];
     return cell;
 }
 

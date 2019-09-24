@@ -7,7 +7,6 @@
 //
 
 #import "AppDelegate.h"
-#import "GAI.h"
 #import "Reachability.h"
 
 @implementation AppDelegate
@@ -26,18 +25,7 @@
         }
     }
     
-    // Optional: automatically send uncaught exceptions to Google Analytics.
-    [GAI sharedInstance].trackUncaughtExceptions = YES;
-    
-    // Optional: set Google Analytics dispatch interval to e.g. 20 seconds.
-    [GAI sharedInstance].dispatchInterval = 20;
-    
-    // Optional: set Logger to VERBOSE for debug information.
-    [[[GAI sharedInstance] logger] setLogLevel:kGAILogLevelVerbose];
-    
-    // Initialize tracker.
-    [[GAI sharedInstance] trackerWithTrackingId:@"UA-11110258-21"];
-    
+
     // Set the client ID
     NSError *error;
     NSString* clientID = @"EUzoWXzqk67qQ4bd";
@@ -83,16 +71,25 @@
   //  }
 }
 
-- (void) alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex {
-    [self testNetworkConnection];
-}
 
 - (void) handleNetworkUnavailable {
-    UIAlertView* av = [[UIAlertView alloc] initWithTitle:@"Connection Issue"
-												 message:@"Internet Connection Not Detected"
-												delegate:self cancelButtonTitle:@"Retry"
-									   otherButtonTitles:nil];
-	[av show];
+    self.viewController = [[[[UIApplication sharedApplication] delegate] window] rootViewController];
+    if ( self.viewController.presentedViewController && !self.viewController.presentedViewController.isBeingDismissed ) {
+        self.viewController = self.viewController.presentedViewController;
+    }
+    UIAlertController * alert = [UIAlertController
+                                 alertControllerWithTitle:NSLocalizedString(@"No Internet Connection", nil)
+                                 message:NSLocalizedString(@"Internet Connection Not Detected", nil)
+                                 preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertAction* okButton = [UIAlertAction
+                               actionWithTitle:NSLocalizedString(@"Retry", nil)
+                               style:UIAlertActionStyleDefault
+                               handler:^(UIAlertAction * action) {
+                                   [self.viewController.navigationController popViewControllerAnimated:YES];
+                               }];
+    [alert addAction:okButton];
+    
+    [self.viewController  presentViewController:alert animated:YES completion:nil];
 }
 
 - (void) testNetworkConnection {
@@ -107,11 +104,13 @@
 
 - (void) getConfig {
     self.queue = [[NSOperationQueue alloc] init];
-    NSURL* url = [NSURL URLWithString:@"http://maps.raleighnc.gov/iMAPS_iOS/iMAPS_Alert.txt"];
-    self.jsonOp.requestCachePolicy = NSURLRequestReloadIgnoringCacheData;
+    NSURL* url = [NSURL URLWithString:@"https://maps.raleighnc.gov/iMAPS_iOS/alert.json"];
+    self.jsonOp.requestCachePolicy = NSURLRequestReloadIgnoringLocalCacheData;
+    self.jsonOp.timeoutInterval = 10;
     self.jsonOp = [[AGSJSONRequestOperation alloc] initWithURL:url];
     self.jsonOp.target = self;
     self.jsonOp.action = @selector(operation:didSucceedWithResponse:);
+
     [self.queue addOperation:self.jsonOp];
 }
 
@@ -121,12 +120,25 @@
 }
 
 - (void)operation:(NSOperation*)op didSucceedWithResponse:(NSDictionary *) results {
-    if ([[results objectForKey:@"enabled"] boolValue] == YES) {
-        UIAlertView* av = [[UIAlertView alloc] initWithTitle:@"iMAPS Alert"
-                                                     message:[results objectForKey:@"message"]
-                                                    delegate:nil cancelButtonTitle:@"OK"
-                                           otherButtonTitles:nil];
-        [av show];
+    if ([[results objectForKey:@"enabled"] isEqualToString:@"true"]) {
+        self.viewController = [[[[UIApplication sharedApplication] delegate] window] rootViewController];
+        if ( self.viewController.presentedViewController && !self.viewController.presentedViewController.isBeingDismissed ) {
+            self.viewController = self.viewController.presentedViewController;
+        }
+        UIAlertController * alert = [UIAlertController
+                                     alertControllerWithTitle:NSLocalizedString(@"Alert", nil)
+                                     message:[results objectForKey:@"message"]
+                                     preferredStyle:UIAlertControllerStyleAlert];
+        UIAlertAction* okButton = [UIAlertAction
+                                   actionWithTitle:NSLocalizedString(@"OK", nil)
+                                   style:UIAlertActionStyleDefault
+                                   handler:^(UIAlertAction * action) {
+                                       [self.viewController.navigationController  popViewControllerAnimated:YES];
+                                   }];
+        [alert addAction:okButton];
+        
+        [self.viewController presentViewController:alert animated:YES completion:nil];
+        
     }
 }
 

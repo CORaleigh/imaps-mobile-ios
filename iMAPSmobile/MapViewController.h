@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 #import <ArcGIS/ArcGIS.h>
-
+#import "BaseMapsSegementedController.h"
 @interface MapViewController : UIViewController<UISplitViewControllerDelegate, UIPopoverControllerDelegate,AGSMapViewLayerDelegate, AGSMapViewTouchDelegate, AGSQueryTaskDelegate, AGSPopupsContainerDelegate,
  AGSGeometryServiceTaskDelegate, UIAlertViewDelegate, AGSLocationDisplayDataSourceDelegate, UIPopoverPresentationControllerDelegate>
 
@@ -29,16 +29,18 @@
 @property (strong, nonatomic) NSMutableArray *fields;
 @property (nonatomic, assign) BOOL isGpsOn;
 @property (weak, nonatomic) IBOutlet UIBarButtonItem *gpsButton;
-@property (strong, nonatomic)UIPopoverController *masterPopoverController;
 @property int idCount;
 @property int idTotal;
 @property (weak, nonatomic) IBOutlet UIBarButtonItem *layerButton;
+@property (weak, nonatomic) IBOutlet UIBarButtonItem *mapsButton;
+
 @property (strong, nonatomic)NSMutableArray *idResults;
 @property (strong, nonatomic)AGSGraphic *idGraphic;
 @property (strong, nonatomic) NSString *lastView;
 @property (strong, nonatomic) NSURL *streetViewUrl;
 @property (nonatomic, assign) BOOL isInCounty;
 @property (strong, nonatomic) AGSGeometryServiceTask *geoService;
+@property (strong, nonatomic) BaseMapsSegementedController *baseMapsController;
 
 
 

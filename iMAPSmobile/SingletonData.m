@@ -17,7 +17,6 @@
 @synthesize currentBaseType;
 @synthesize aerialIndex;
 @synthesize baseIndex;
-@synthesize popover;
 @synthesize singleTapName;
 
 #pragma mark Singleton Implementation
@@ -111,15 +110,7 @@ static SingletonData *sharedObject;
     shared.aerialIndex = aerialIndex;
 }
 
-+(UIPopoverController *) getPopover{
-    SingletonData *shared = [SingletonData sharedInstance];
-    return shared.popover;
-}
 
-+(void) setPopover:(UIPopoverController *)popover{
-    SingletonData *shared = [SingletonData sharedInstance];
-    shared.popover = popover;
-}
 
 +(NSString *) getSingleTapName {
     SingletonData *shared = [SingletonData sharedInstance];
