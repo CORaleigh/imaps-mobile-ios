@@ -14,6 +14,14 @@
          contextName = "-[AddressesViewController viewDidLoad]:AddressesViewController.m">
       </ContextState>
       <ContextState
+         contextName = "-[ServicesWebViewController webView:decidePolicyForNavigationAction:decisionHandler:]:ServicesWebViewController.m">
+         <PersistentStrings>
+            <PersistentString
+               value = "navigationAction.request.URL">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
          contextName = "-[SearchController tableView:didSelectRowAtIndexPath:]:SearchController.m">
          <PersistentStrings>
             <PersistentString
@@ -21,14 +29,6 @@
             </PersistentString>
             <PersistentString
                value = "firstSpace">
-            </PersistentString>
-         </PersistentStrings>
-      </ContextState>
-      <ContextState
-         contextName = "-[ServicesWebViewController webView:decidePolicyForNavigationAction:decisionHandler:]:ServicesWebViewController.m">
-         <PersistentStrings>
-            <PersistentString
-               value = "navigationAction.request.URL">
             </PersistentString>
          </PersistentStrings>
       </ContextState>
@@ -78,6 +78,14 @@
       </ContextState>
       <ContextState
          contextName = "-[LayersViewController switchChanged:]:LayersViewController.m">
+      </ContextState>
+      <ContextState
+         contextName = "-[MapViewController reportResultsOnIpad]:MapViewController.m">
+         <PersistentStrings>
+            <PersistentString
+               value = "[controller.viewControllers objectAtIndex:1]">
+            </PersistentString>
+         </PersistentStrings>
       </ContextState>
       <ContextState
          contextName = "-[DeedsViewController operation:didSucceedWithDeeds:]:DeedsViewController.m">

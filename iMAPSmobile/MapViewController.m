@@ -734,29 +734,35 @@
 
 -(void)reportResultsOnIpad{
     //load results view controller in master view//
-    //NSArray *controllers = self.splitViewController.viewControllers;
-  //  UINavigationController *controller = [controllers objectAtIndex:0];
-  //  UIViewController *currentController = [controller.viewControllers objectAtIndex:0];
-   // if (![currentController isKindOfClass:([ResultsViewController class])]) {
-        
-        
+    NSArray *controllers = self.splitViewController.viewControllers;
+    UINavigationController *controller = [controllers objectAtIndex:0];
+    UIViewController *currentController = nil;
+    if ([controller.viewControllers count] > 1) {
+        currentController = [controller.viewControllers objectAtIndex:1];
+    } else {
+        currentController = [controller.viewControllers objectAtIndex:0];
+    }
+    NSMutableDictionary* dict = [NSMutableDictionary dictionary];
+    [dict setObject:self.fields forKey:@"fields"];
+    [dict setObject:self.accounts forKey:@"accounts"];
+    if (![currentController isKindOfClass:([ResultsViewController class])]) {
+//
+//
         UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main_iPad" bundle:[NSBundle mainBundle]];
-        ResultsViewController *rvc = [storyboard instantiateViewControllerWithIdentifier:@"resultsViewController"];
-      // NSMutableArray *vcs = [[NSMutableArray alloc] initWithObjects:rvc, nil];
-       // [controller setViewControllers:vcs];
+       ResultsViewController *rvc = [storyboard instantiateViewControllerWithIdentifier:@"resultsViewController"];
+       NSMutableArray *vcs = [[NSMutableArray alloc] initWithObjects:rvc, nil];
+        [controller setViewControllers:vcs];
         //add notifier to results view controller//
         //[[NSNotificationCenter defaultCenter] addObserver:rvc selector:@selector(showResults:) name:@"showResultsNotification" object:nil];
-        
+//
         SEL selector = sel_registerName("showResults:");
-        [[NSNotificationCenter defaultCenter] addObserver:rvc selector:selector name:@"showResultsNotification" object:nil];
-        
-    //} else {
-        //notify results view controller of results//
-        NSMutableDictionary* dict = [NSMutableDictionary dictionary];
-        [dict setObject:self.fields forKey:@"fields"];
-        [dict setObject:self.accounts forKey:@"accounts"];
-        [[NSNotificationCenter defaultCenter] postNotificationName: @"showResultsNotification" object: self userInfo: dict];
-   // }
+        [[NSNotificationCenter defaultCenter] addObserver:rvc selector:selector name:@"showResultsNotification" object: nil];
+
+    } else {
+//        //notify results view controller of results//
+//
+    }
+    [[NSNotificationCenter defaultCenter] postNotificationName: @"showResultsNotification" object: self userInfo: dict];
 
 }
 

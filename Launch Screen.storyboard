@@ -16,7 +16,7 @@
                         <rect key="frame" x="0.0" y="0.0" width="414" height="725"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
-                            <searchBar contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" showsCancelButton="YES" translatesAutoresizingMaskIntoConstraints="NO" id="7RZ-QA-JIb">
+                            <searchBar contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" translatesAutoresizingMaskIntoConstraints="NO" id="7RZ-QA-JIb">
                                 <rect key="frame" x="0.0" y="0.0" width="414" height="56"/>
                                 <viewLayoutGuide key="safeArea" id="Hmi-oJ-75N"/>
                                 <textInputTraits key="textInputTraits" autocorrectionType="no"/>

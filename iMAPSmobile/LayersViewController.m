@@ -195,6 +195,9 @@
 -(void)tableView:(UITableView *)tableView accessoryButtonTappedForRowWithIndexPath:(NSIndexPath *)indexPath
 {
     NSMutableDictionary *layer = [_opLayers objectAtIndex:indexPath.row];
+    if (!_mapView) {
+        _mapView = [SingletonData getMapView];
+    }
     AGSLayer *mapLayer = [_mapView mapLayerForName:[layer objectForKey:@"name"]];
     _selectedLayer = mapLayer;
     [self performSegueWithIdentifier:@"layersToDetails" sender:self.navigationController];
